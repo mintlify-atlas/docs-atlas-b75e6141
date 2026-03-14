@@ -1,0 +1,207 @@
+---
+title: How to Play
+description: Learn the objective, how to start, and win/lose conditions in Forsaken Casino VR
+---
+
+## Objective
+
+Forsaken Casino is a VR memory card matching game set in a haunting casino environment. Your goal is to **find all 4 matching pairs of cards before your time runs out**. You have 40 seconds to complete the challenge or you'll lose your soul to the casino.
+
+<Warning>
+  The timer starts automatically when you flip your first card. Make sure you're ready before interacting with the board!
+</Warning>
+
+## Starting the Game
+
+The game begins automatically when the scene loads, but the timer and background music only start when you take your first action.
+
+<Steps>
+  <Step title="Scene Initialization">
+    When the game loads, you'll find yourself standing in front of a dark casino table with 8 face-down cards arranged in a 4x2 grid.
+    
+    ```javascript
+    function initGame() {
+        board.innerHTML = '';
+        const shuffled = [...cardData].sort(() => Math.random() - 0.5);
+        shuffled.forEach((imgId, index) => {
+            const x = (index % 4) * 0.4; 
+            const y = Math.floor(index / 4) * -0.6;
+            // Card creation logic...
+        });
+    }
+    ```
+    
+    The cards are randomly shuffled each time, ensuring a unique game experience.
+  </Step>
+
+  <Step title="First Card Interaction">
+    Use your gaze-based cursor (red reticle) to hover over any card. The moment you hover over a card, the game begins:
+    
+    ```javascript
+    card.addEventListener('mouseenter', function() {
+        if (lockBoard || this.dataset.flipped === "true" || timeLeft <= 0) return;
+        
+        startTimer();
+        new Audio(document.querySelector('#click-sound').src).play();
+        flip(this);
+    });
+    ```
+    
+    - The 40-second countdown timer starts
+    - Background music begins playing
+    - The card flips to reveal its image
+  </Step>
+
+  <Step title="Match the Pairs">
+    Continue flipping cards two at a time to find matching pairs. The game board contains 4 unique images, each appearing twice.
+  </Step>
+</Steps>
+
+## Game Board Layout
+
+The 8 cards are positioned on a circular casino table:
+
+- **Grid**: 4 columns × 2 rows
+- **Card dimensions**: 0.35 × 0.5 units
+- **Spacing**: Cards are evenly distributed across the table surface
+- **Position**: Located at table height (0.85 units), tilted at -90° for optimal viewing
+
+```javascript
+const cardData = ['img1', 'img1', 'img2', 'img2', 'img3', 'img3', 'img4', 'img4'];
+```
+
+## Win Condition
+
+<Card title="Victory: SALISTE CON VIDA" icon="trophy">
+  You win the game by finding all 4 matching pairs before the timer reaches 0 seconds.
+</Card>
+
+When you successfully match all pairs:
+
+```javascript
+function win() {
+    clearInterval(timerInterval);
+    statusText.setAttribute('value', 'SALISTE CON VIDA');
+    setTimeout(() => location.reload(), 4000);
+}
+```
+
+<Steps>
+  <Step title="Final Pair Matched">
+    When you match the 4th and final pair, the game immediately stops the timer.
+  </Step>
+
+  <Step title="Victory Message">
+    The text "SALISTE CON VIDA" ("YOU ESCAPED WITH YOUR LIFE") appears in large red letters above the table.
+  </Step>
+
+  <Step title="Automatic Restart">
+    After 4 seconds, the game automatically reloads, shuffling the cards for a new challenge.
+  </Step>
+</Steps>
+
+## Lose Condition
+
+<Card title="Defeat: PERDISTE TU ALMA" icon="skull" color="#ff0000">
+  You lose the game if the timer reaches 0 seconds before you've matched all 4 pairs.
+</Card>
+
+When time runs out:
+
+```javascript
+function die() {
+    clearInterval(timerInterval);
+    statusText.setAttribute('value', 'PERDISTE TU ALMA');
+    deathOverlay.setAttribute('animation', 'property: material.opacity; to: 1; dur: 1000');
+    setTimeout(() => location.reload(), 3000);
+}
+```
+
+<Steps>
+  <Step title="Timer Reaches Zero">
+    The countdown timer decrements every second:
+    
+    ```javascript
+    timerInterval = setInterval(() => {
+        timeLeft--;
+        timerText.setAttribute('value', `VIDA: ${timeLeft}s`);
+        if(timeLeft <= 0) die();
+    }, 1000);
+    ```
+  </Step>
+
+  <Step title="Death Sequence">
+    When `timeLeft` reaches 0:
+    - The timer immediately stops
+    - "PERDISTE TU ALMA" ("YOU LOST YOUR SOUL") appears on screen
+    - A dark red overlay fades in over your vision for 1 second
+  </Step>
+
+  <Step title="Automatic Restart">
+    After 3 seconds, the game reloads for another attempt.
+  </Step>
+</Steps>
+
+## Starting Timer and Lives
+
+<Info>
+  You start with **40 seconds** displayed as "VIDA: 40s" ("LIFE: 40s") in the upper portion of your view.
+</Info>
+
+The timer initialization:
+
+```javascript
+let timeLeft = 40;
+let timerInterval;
+let gameActive = false;
+
+function startTimer() {
+    if(!gameActive) {
+        gameActive = true;
+        document.querySelector('#bgMusic').components.sound.playSound();
+        timerInterval = setInterval(() => {
+            timeLeft--;
+            timerText.setAttribute('value', `VIDA: ${timeLeft}s`);
+            if(timeLeft <= 0) die();
+        }, 1000);
+    }
+}
+```
+
+<Tip>
+  Study the card positions before making your first move. You can look around the table freely without starting the timer—it only begins when you hover over a card.
+</Tip>
+
+## Quick Reference
+
+<CardGroup cols={2}>
+  <Card title="Total Cards" icon="layer-group">
+    8 cards (4 pairs)
+  </Card>
+  
+  <Card title="Starting Time" icon="clock">
+    40 seconds
+  </Card>
+  
+  <Card title="Win Condition" icon="check">
+    Match all 4 pairs
+  </Card>
+  
+  <Card title="Lose Condition" icon="xmark">
+    Timer reaches 0
+  </Card>
+</CardGroup>
+
+## Strategy Tips
+
+<Accordion title="Memorization Technique">
+  When you flip cards that don't match, try to remember their positions. The cards stay in the same location throughout the game.
+</Accordion>
+
+<Accordion title="Time Management">
+  With 40 seconds and 8 cards, you have about 5 seconds per pair. Work quickly but deliberately.
+</Accordion>
+
+<Accordion title="First Move Advantage">
+  Since the timer doesn't start until your first flip, take a moment to plan your approach and get comfortable with the controls.
+</Accordion>

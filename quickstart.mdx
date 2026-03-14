@@ -1,80 +1,202 @@
 ---
-title: "Quickstart"
-description: "Start building awesome documentation in minutes"
+title: 'Quickstart'
+description: 'Get started with Forsaken Casino VR in under 5 minutes'
 ---
 
-## Get started in three steps
+<Note>
+Forsaken Casino is a WebVR memory card game built with A-Frame 1.4.0. Match all pairs before your life runs out to escape with your soul.
+</Note>
 
-Get your documentation site running locally and make your first customization.
+## Getting Started
 
-### Step 1: Set up your local environment
+Follow these steps to get Forsaken Casino running on your device.
 
-<AccordionGroup>
-  <Accordion icon="copy" title="Clone your docs locally">
-    During the onboarding process, you created a GitHub repository with your docs content if you didn't already have one. You can find a link to this repository in your [dashboard](https://dashboard.mintlify.com).
-    
-    To clone the repository locally so that you can make and preview changes to your docs, follow the [Cloning a repository](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository) guide in the GitHub docs.
-  </Accordion>
-  <Accordion icon="rectangle-terminal" title="Start the preview server">
-    1. Install the Mintlify CLI: `npm i -g mint`
-    2. Navigate to your docs directory and run: `mint dev`
-    3. Open `http://localhost:3000` to see your docs live!
-    
-    <Tip>Your preview updates automatically as you edit files.</Tip>
-  </Accordion>
-</AccordionGroup>
+<Steps>
+  <Step title="Download the Game Files">
+    Clone or download the Forsaken Casino repository to your local machine:
 
-### Step 2: Deploy your changes
+    ```bash
+    git clone <repository-url>
+    cd forsaken-casino
+    ```
 
-<AccordionGroup>
-  <Accordion icon="github" title="Install our GitHub app">
-    Install the Mintlify GitHub app from your [dashboard](https://dashboard.mintlify.com/settings/organization/github-app).
-    
-    Our GitHub app automatically deploys your changes to your docs site, so you don't need to manage deployments yourself.
-</Accordion>
-<Accordion icon="palette" title="Update your site name and colors">
-    For a first change, let's update the name and colors of your docs site.
+    Ensure you have the following directory structure:
+    ```
+    forsaken-casino/
+    ├── index.html
+    ├── img/
+    │   ├── img1.jpg
+    │   ├── img2.jpg
+    │   ├── img3.jpg
+    │   ├── img4.jpg
+    │   └── atras.jpeg
+    ├── piso.jpg
+    ├── lados.jpg
+    ├── cartas.mp3
+    └── fondo.mp3
+    ```
+  </Step>
 
-    1. Open `docs.json` in your editor.
-    2. Change the `"name"` field to your project name.
-    3. Update the `"colors"` to match your brand.
-    4. Save and see your changes instantly at `http://localhost:3000`.
+  <Step title="Serve the Game Locally">
+    The game requires a web server to load assets properly. Use any of these methods:
 
-    <Tip>Try changing the primary color to see an immediate difference!</Tip>
-  </Accordion>
-</AccordionGroup>
+    <CodeGroup>
+    ```bash Python
+    # Python 3
+    python -m http.server 8000
+    ```
 
-### Step 3: Go live
+    ```bash Node.js
+    # Using npx (no installation needed)
+    npx serve
+    ```
 
-<Accordion icon="rocket" title="Publish your docs">
-  1. Commit and push your changes.
-  2. Your docs will update and be live in moments!
-</Accordion>
+    ```bash PHP
+    # PHP built-in server
+    php -S localhost:8000
+    ```
+    </CodeGroup>
 
-## Next steps
+    <Warning>
+    Do not open `index.html` directly in your browser. Asset loading requires an HTTP server.
+    </Warning>
+  </Step>
 
-Now that you have your docs running, explore these key features:
+  <Step title="Open in Your Browser">
+    Navigate to the game in your browser:
+
+    ```
+    http://localhost:8000
+    ```
+
+    The game will load with the A-Frame VR scene initialized automatically.
+  </Step>
+
+  <Step title="Start Playing">
+    **Desktop Mode:**
+    - Use your mouse cursor to hover over cards
+    - Cards flip automatically on hover (`mouseenter` event)
+    - The timer starts automatically when you flip your first card
+
+    **VR Mode:**
+    - Click the VR goggles icon in the bottom-right corner
+    - Use your VR controller's laser pointer to select cards
+    - Point at a card to flip it
+
+    <Info>
+    The game gives you **40 seconds** to match all 4 pairs (8 cards total). Match all pairs before time runs out to win!
+    </Info>
+  </Step>
+</Steps>
+
+## Game Mechanics
+
+### How to Play
+
+The game board consists of 8 cards arranged in a 4x2 grid on a virtual casino table:
+
+```javascript index.html
+const cardData = ['img1', 'img1', 'img2', 'img2', 'img3', 'img3', 'img4', 'img4'];
+```
+
+- **Objective:** Match all 4 pairs before the timer reaches 0
+- **Timer:** You have 40 seconds of "VIDA" (life)
+- **Flipping Cards:** Hover over cards to flip them
+- **Matching:** If two flipped cards match, they disappear
+- **Mismatching:** If cards don't match, they flip back after a delay
+
+### Win Condition
+
+Match all 4 pairs to see the victory message:
+
+```javascript index.html
+function win() {
+  clearInterval(timerInterval);
+  statusText.setAttribute('value', 'SALISTE CON VIDA');
+  setTimeout(() => location.reload(), 4000);
+}
+```
+
+### Lose Condition
+
+If the timer reaches 0 before matching all pairs:
+
+```javascript index.html
+function die() {
+  clearInterval(timerInterval);
+  statusText.setAttribute('value', 'PERDISTE TU ALMA');
+  deathOverlay.setAttribute('animation', 'property: material.opacity; to: 1; dur: 1000');
+  setTimeout(() => location.reload(), 3000);
+}
+```
+
+## Controls
+
+### Desktop Controls
 
 <CardGroup cols={2}>
-
-<Card title="Write Content" icon="pen-to-square" href="/essentials/markdown">
-  Learn MDX syntax and start writing your documentation.
-</Card>
-
-<Card title="Customize style" icon="palette" href="/essentials/settings">
-  Make your docs match your brand perfectly.
-</Card>
-
-<Card title="Add code examples" icon="square-code" href="/essentials/code">
-  Include syntax-highlighted code blocks.
-</Card>
-
-<Card title="API documentation" icon="code" href="/api-reference/introduction">
-  Auto-generate API docs from OpenAPI specs.
-</Card>
-
+  <Card title="Mouse" icon="computer-mouse">
+    Hover over cards to flip them. The red cursor indicates your selection point.
+  </Card>
+  <Card title="WASD Keys" icon="keyboard">
+    Move around the scene using WASD controls (acceleration: 10)
+  </Card>
+  <Card title="Mouse Movement" icon="arrows-up-down-left-right">
+    Look around the scene by moving your mouse
+  </Card>
 </CardGroup>
 
+### VR Controls
+
+In VR mode, use your headset's controllers to point and select cards using the raycaster:
+
+```html index.html
+<a-cursor id="cursor" raycaster="objects: .clickable" material="color: #ff0000" scale="0.5 0.5 0.5"></a-cursor>
+```
+
+## Audio Features
+
+The game includes immersive audio:
+
+- **Background Music:** Looping ambient soundtrack at 30% volume
+- **Card Flip Sound:** Plays when hovering over clickable cards
+
+```html index.html
+<a-entity id="bgMusic" sound="src: #background-music; loop: true; volume: 0.3"></a-entity>
+```
+
 <Note>
-  **Need help?** See our [full documentation](https://mintlify.com/docs) or join our [community](https://mintlify.com/community).
+Audio starts automatically when you flip your first card to comply with browser autoplay policies.
 </Note>
+
+## Troubleshooting
+
+### Cards Not Loading
+
+Ensure all image files are in the correct directory:
+```html index.html
+<img id="img1" src="img/img1.jpg">
+<img id="img2" src="img/img2.jpg">
+<img id="img3" src="img/img3.jpg">
+<img id="img4" src="img/img4.jpg">
+<img id="back" src="img/atras.jpeg">
+```
+
+### Audio Not Playing
+
+Browsers require user interaction before playing audio. The game handles this by starting audio when you flip your first card.
+
+### VR Mode Not Working
+
+See the [Requirements](/requirements) page for VR headset compatibility and WebXR browser support.
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="System Requirements" icon="gear" href="/requirements">
+    Check browser compatibility and VR headset support
+  </Card>
+  <Card title="Customize the Game" icon="palette" href="/development/customization">
+    Learn how to modify cards, timers, and visual effects
+  </Card>
+</CardGroup>

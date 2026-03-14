@@ -1,0 +1,88 @@
+---
+title: Introduction
+description: Welcome to Forsaken Casino - A horror-themed VR memory card matching game
+---
+
+# Welcome to Forsaken Casino
+
+Forsaken Casino is an immersive VR memory card matching game built with A-Frame that challenges players to match pairs of cards within a 40-second survival timer. Set in a dark, atmospheric casino environment with flickering lights and eerie soundscapes, this horror-themed experience tests your memory skills while creating tension and urgency.
+
+<CardGroup cols={2}>
+  <Card title="Quick Start" icon="rocket" href="/quickstart">
+    Get the game running in minutes
+  </Card>
+  <Card title="How to Play" icon="gamepad" href="/gameplay/how-to-play">
+    Learn the gameplay mechanics
+  </Card>
+  <Card title="Development Guide" icon="code" href="/development/architecture">
+    Understand the code architecture
+  </Card>
+  <Card title="Customization" icon="palette" href="/development/customization">
+    Customize visuals and gameplay
+  </Card>
+</CardGroup>
+
+## Key Features
+
+<CardGroup cols={2}>
+  <Card title="Immersive VR Experience" icon="vr-cardboard">
+    Built with A-Frame 1.4.0 for seamless WebVR/WebXR compatibility across devices
+  </Card>
+  <Card title="Horror Atmosphere" icon="ghost">
+    Dark environments with exponential fog, flickering red lighting, and ominous background music
+  </Card>
+  <Card title="Timed Gameplay" icon="clock">
+    40-second survival timer that starts on first card interaction
+  </Card>
+  <Card title="Smooth Animations" icon="wand-magic-sparkles">
+    3D card flip animations and scale transitions for matched pairs
+  </Card>
+  <Card title="Audio Feedback" icon="volume-high">
+    Background music and card flip sound effects for immersive experience
+  </Card>
+  <Card title="Robust Logic" icon="shield-check">
+    Board locking mechanism prevents race conditions during card matching
+  </Card>
+</CardGroup>
+
+## What You'll Build
+
+This project demonstrates a complete VR game implementation including:
+
+- **3D Environment**: Casino table setup with atmospheric lighting and textures
+- **Game Logic**: Card shuffling, flip detection, pair matching, and win/lose conditions
+- **VR Interactions**: Gaze-based cursor controls for card selection
+- **State Management**: Timer system, game state tracking, and board locking
+- **Audio System**: Background music and interactive sound effects
+
+## Technology Stack
+
+- **A-Frame 1.4.0** - WebVR framework for building VR experiences
+- **HTML5** - Game structure and asset management
+- **JavaScript** - Game logic and interactivity
+- **WebGL** - 3D rendering via A-Frame
+
+## Project Structure
+
+The game is contained in a single `index.html` file that includes:
+
+- A-Frame scene setup with fog and lighting
+- Asset preloading (images and audio)
+- VR camera rig with gaze-based cursor
+- Game board entity for card placement
+- JavaScript game logic for mechanics and state management
+
+<Note>
+  Forsaken Casino runs directly in VR-capable browsers without requiring any build tools or dependencies beyond the A-Frame CDN.
+</Note>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="System Requirements" icon="desktop" href="/requirements">
+    Check compatibility and VR headset support
+  </Card>
+  <Card title="Quick Start Guide" icon="play" href="/quickstart">
+    Launch the game in under 5 minutes
+  </Card>
+</CardGroup>

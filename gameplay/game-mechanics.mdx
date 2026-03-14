@@ -1,0 +1,402 @@
+---
+title: Game Mechanics
+description: Deep dive into the timer system, card matching logic, board locking, and game states in Forsaken Casino VR
+---
+
+## Core Game States
+
+Forsaken Casino operates through several distinct game states that control player interaction and game flow.
+
+### State Variables
+
+The game uses these critical state variables:
+
+```javascript
+let timeLeft = 40;
+let timerInterval;
+let gameActive = false;
+let pairsFound = 0;
+let lockBoard = false; // LLAVE MAESTRA PARA EVITAR TRABAS
+const cardData = ['img1', 'img1', 'img2', 'img2', 'img3', 'img3', 'img4', 'img4'];
+let flippedCards = [];
+```
+
+<CardGroup cols={2}>
+  <Card title="gameActive" icon="power-off">
+    **Type**: Boolean  
+    **Purpose**: Tracks whether the timer has started  
+    **Initial**: `false`
+  </Card>
+  
+  <Card title="lockBoard" icon="lock">
+    **Type**: Boolean  
+    **Purpose**: Prevents card flips during animation  
+    **Initial**: `false`
+  </Card>
+  
+  <Card title="pairsFound" icon="check-double">
+    **Type**: Number  
+    **Purpose**: Counts successful matches  
+    **Initial**: `0` (Win at `4`)
+  </Card>
+  
+  <Card title="timeLeft" icon="hourglass">
+    **Type**: Number  
+    **Purpose**: Remaining seconds  
+    **Initial**: `40`
+  </Card>
+</CardGroup>
+
+## Timer System
+
+The timer is the core survival mechanic that creates tension and urgency.
+
+### Timer Initialization
+
+The timer starts only when the player flips their first card:
+
+```javascript
+function startTimer() {
+    if(!gameActive) {
+        gameActive = true;
+        document.querySelector('#bgMusic').components.sound.playSound();
+        timerInterval = setInterval(() => {
+            timeLeft--;
+            timerText.setAttribute('value', `VIDA: ${timeLeft}s`);
+            if(timeLeft <= 0) die();
+        }, 1000);
+    }
+}
+```
+
+<Steps>
+  <Step title="Activation Check">
+    The `if(!gameActive)` guard ensures the timer only starts once, preventing multiple timer instances.
+  </Step>
+
+  <Step title="State Update">
+    Sets `gameActive = true` to mark the game as running.
+  </Step>
+
+  <Step title="Audio Start">
+    Begins playing the background music at 30% volume (configured in the scene).
+  </Step>
+
+  <Step title="Countdown Loop">
+    Creates a 1-second interval that:
+    - Decrements `timeLeft`
+    - Updates the HUD display
+    - Checks for death condition
+  </Step>
+</Steps>
+
+### Timer Display
+
+The timer is displayed in the player's view using A-Frame text:
+
+```javascript
+<a-text id="timerText" value="VIDA: 40s" color="red" 
+        position="0 0.5 -1" scale="0.4 0.4 0.4" align="center"></a-text>
+```
+
+<Info>
+  The timer text is positioned 0.5 units above the camera center and 1 unit forward, making it always visible in the upper field of view.
+</Info>
+
+### Timer Death Sequence
+
+When `timeLeft` reaches 0:
+
+```javascript
+function die() {
+    clearInterval(timerInterval);
+    statusText.setAttribute('value', 'PERDISTE TU ALMA');
+    deathOverlay.setAttribute('animation', 'property: material.opacity; to: 1; dur: 1000');
+    setTimeout(() => location.reload(), 3000);
+}
+```
+
+<Warning>
+  Once the timer reaches 0, no further card interactions are possible. The `timeLeft <= 0` check in the card event listener blocks all input.
+</Warning>
+
+## Card Matching Logic
+
+The card matching system uses a two-card comparison mechanic with strict state management.
+
+### Card Data Structure
+
+Each card is an A-Frame entity with custom data attributes:
+
+```javascript
+card.setAttribute('position', `${x} ${y} 0`);
+card.setAttribute('width', '0.35'); 
+card.setAttribute('height', '0.5'); 
+card.setAttribute('depth', '0.01');
+card.setAttribute('src', '#back');
+card.setAttribute('class', 'clickable');
+card.dataset.id = imgId;  // Image identifier (img1, img2, img3, or img4)
+card.dataset.flipped = "false";  // Flip state tracker
+```
+
+### Flip Mechanism
+
+Cards flip when the player's gaze enters their hitbox:
+
+```javascript
+card.addEventListener('mouseenter', function() {
+    // Si el tablero está bloqueado o la carta ya se giró, NO HACER NADA
+    if (lockBoard || this.dataset.flipped === "true" || timeLeft <= 0) return;
+    
+    startTimer();
+    new Audio(document.querySelector('#click-sound').src).play();
+    flip(this);
+});
+```
+
+<Accordion title="Flip Prevention Conditions">
+  A card will NOT flip if:
+  1. **Board is locked** (`lockBoard === true`) - Prevents interaction during animation
+  2. **Card already flipped** (`dataset.flipped === "true"`) - Prevents re-flipping matched or currently flipped cards
+  3. **Game over** (`timeLeft <= 0`) - No interaction after death
+</Accordion>
+
+### Flip Animation
+
+The flip function handles the visual transformation:
+
+```javascript
+function flip(card) {
+    card.dataset.flipped = "true";
+    flippedCards.push(card);
+
+    // Animación de giro limpia
+    card.setAttribute('animation', 'property: rotation; to: 0 180 0; dur: 250');
+    setTimeout(() => card.setAttribute('src', '#' + card.dataset.id), 125);
+
+    if (flippedCards.length === 2) {
+        lockBoard = true; // BLOQUEO TOTAL hasta procesar el par
+        // Matching logic...
+    }
+}
+```
+
+<Steps>
+  <Step title="Mark as Flipped">
+    Sets `dataset.flipped = "true"` to prevent re-flipping.
+  </Step>
+
+  <Step title="Add to Queue">
+    Pushes the card to `flippedCards` array for comparison.
+  </Step>
+
+  <Step title="180° Rotation">
+    Animates the card rotating 180° on the Y-axis over 250ms.
+  </Step>
+
+  <Step title="Texture Swap">
+    At 125ms (halfway through rotation), changes the texture from back to the card's image.
+  </Step>
+
+  <Step title="Pair Check">
+    If two cards are flipped, locks the board and processes the match.
+  </Step>
+</Steps>
+
+## Board Locking System
+
+The `lockBoard` variable is the "master key" that prevents interaction issues.
+
+<Note>
+  The source code comment explicitly states: `// LLAVE MAESTRA PARA EVITAR TRABAS` ("MASTER KEY TO AVOID JAMS")
+</Note>
+
+### When Board is Locked
+
+The board locks immediately when two cards are flipped:
+
+```javascript
+if (flippedCards.length === 2) {
+    lockBoard = true; // BLOQUEO TOTAL hasta procesar el par
+    
+    const [card1, card2] = flippedCards;
+    // Comparison logic...
+}
+```
+
+### Matching Pair Sequence
+
+When two cards match:
+
+```javascript
+if (card1.dataset.id === card2.dataset.id) {
+    // ES PAR
+    setTimeout(() => {
+        card1.setAttribute('animation', 'property: scale; to: 0 0 0; dur: 300');
+        card2.setAttribute('animation', 'property: scale; to: 0 0 0; dur: 300');
+        pairsFound++;
+        flippedCards = [];
+        lockBoard = false; // LIBERAR
+        if (pairsFound === 4) win();
+    }, 600);
+}
+```
+
+<Steps>
+  <Step title="600ms Delay">
+    Waits 600ms to let the player see both cards before they disappear.
+  </Step>
+
+  <Step title="Scale to Zero">
+    Both cards shrink to 0 scale over 300ms, creating a "vanishing" effect.
+  </Step>
+
+  <Step title="Increment Counter">
+    Increases `pairsFound` by 1.
+  </Step>
+
+  <Step title="Reset State">
+    Clears `flippedCards` array and unlocks the board.
+  </Step>
+
+  <Step title="Win Check">
+    If 4 pairs are found, triggers the win sequence.
+  </Step>
+</Steps>
+
+### Non-Matching Pair Sequence
+
+When two cards don't match:
+
+```javascript
+else {
+    // NO ES PAR
+    setTimeout(() => {
+        card1.setAttribute('animation', 'property: rotation; to: 0 0 0; dur: 250');
+        card2.setAttribute('animation', 'property: rotation; to: 0 0 0; dur: 250');
+        setTimeout(() => {
+            card1.setAttribute('src', '#back');
+            card2.setAttribute('src', '#back');
+            card1.dataset.flipped = "false";
+            card2.dataset.flipped = "false";
+            flippedCards = [];
+            lockBoard = false; // LIBERAR
+        }, 125);
+    }, 800);
+}
+```
+
+<Steps>
+  <Step title="800ms Display">
+    Waits 800ms to let the player memorize the card positions.
+  </Step>
+
+  <Step title="Flip Back Animation">
+    Both cards rotate back to 0° over 250ms.
+  </Step>
+
+  <Step title="Texture Restoration">
+    At 125ms (halfway through flip), changes texture back to card back image.
+  </Step>
+
+  <Step title="State Reset">
+    Marks both cards as unflipped, clears the array, and unlocks the board.
+  </Step>
+</Steps>
+
+<Warning>
+  The board remains locked for a total of **1,725ms** (800ms + 250ms + 125ms + 550ms buffer) on mismatches, and **900ms** on matches. During this time, no cards can be flipped.
+</Warning>
+
+## Game Initialization
+
+The game board is generated procedurally with randomized card positions:
+
+```javascript
+function initGame() {
+    board.innerHTML = '';
+    const shuffled = [...cardData].sort(() => Math.random() - 0.5);
+    shuffled.forEach((imgId, index) => {
+        const x = (index % 4) * 0.4; 
+        const y = Math.floor(index / 4) * -0.6;
+        const card = document.createElement('a-box');
+        
+        card.setAttribute('position', `${x} ${y} 0`);
+        // Card setup...
+        
+        card.addEventListener('mouseenter', function() {
+            // Interaction logic...
+        });
+        board.appendChild(card);
+    });
+}
+
+initGame();
+```
+
+### Shuffling Algorithm
+
+<Info>
+  Uses Fisher-Yates shuffle approximation via `sort(() => Math.random() - 0.5)` to randomize card positions.
+</Info>
+
+### Grid Positioning
+
+Cards are arranged in a 4×2 grid:
+
+- **X position**: `(index % 4) * 0.4` creates 4 columns
+- **Y position**: `Math.floor(index / 4) * -0.6` creates 2 rows
+- **Spacing**: 0.4 units horizontally, 0.6 units vertically
+
+## Win and Lose States
+
+### Victory Condition
+
+```javascript
+function win() {
+    clearInterval(timerInterval);
+    statusText.setAttribute('value', 'SALISTE CON VIDA');
+    setTimeout(() => location.reload(), 4000);
+}
+```
+
+Triggered when `pairsFound === 4`.
+
+### Defeat Condition
+
+```javascript
+function die() {
+    clearInterval(timerInterval);
+    statusText.setAttribute('value', 'PERDISTE TU ALMA');
+    deathOverlay.setAttribute('animation', 'property: material.opacity; to: 1; dur: 1000');
+    setTimeout(() => location.reload(), 3000);
+}
+```
+
+Triggered when `timeLeft <= 0`.
+
+<Tip>
+  Both win and lose states use `location.reload()` to restart the game, ensuring a fresh shuffle and reset timer.
+</Tip>
+
+## Audio System
+
+### Sound Effects
+
+```javascript
+new Audio(document.querySelector('#click-sound').src).play();
+```
+
+Plays the card flip sound (`cartas.mp3`) on every flip interaction.
+
+### Background Music
+
+```javascript
+document.querySelector('#bgMusic').components.sound.playSound();
+```
+
+Starts the looping background music (`fondo.mp3`) at 30% volume when the timer begins:
+
+```html
+<a-entity id="bgMusic" sound="src: #background-music; loop: true; volume: 0.3"></a-entity>
+```

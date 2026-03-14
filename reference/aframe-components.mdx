@@ -1,0 +1,590 @@
+---
+title: 'A-Frame Components'
+description: 'Complete reference for all A-Frame components used in Forsaken Casino VR'
+---
+
+## Overview
+
+Forsaken Casino VR is built using [A-Frame 1.4.0](https://aframe.io/releases/1.4.0/aframe.min.js), a web framework for building virtual reality experiences. This page documents all A-Frame components and their configurations as implemented in the game.
+
+---
+
+## Scene Configuration
+
+### a-scene
+
+The root container for the VR experience.
+
+<ParamField path="fog" type="object">
+  Atmospheric fog configuration for the horror ambiance
+  
+  **Attributes:**
+  - `type`: `exponential` - Creates dense, horror-themed fog
+  - `color`: `#0a0000` - Deep red-black color
+  - `density`: `0.15` - Controls fog thickness
+</ParamField>
+
+```html index.html:8
+<a-scene fog="type: exponential; color: #0a0000; density: 0.15">
+```
+
+---
+
+## Asset Management
+
+### a-assets
+
+Preloads and manages all game assets for optimal performance.
+
+```html index.html:9-19
+<a-assets>
+  <img id="img1" src="img/img1.jpg">
+  <img id="img2" src="img/img2.jpg">
+  <img id="img3" src="img/img3.jpg">
+  <img id="img4" src="img/img4.jpg">
+  <img id="back" src="img/atras.jpeg">
+  <img id="carpet" src="piso.jpg">
+  <img id="stone" src="lados.jpg">
+  <audio id="click-sound" src="cartas.mp3"></audio>
+  <audio id="background-music" src="fondo.mp3" preload="auto"></audio>
+</a-assets>
+```
+
+<Note>
+  All assets are preloaded before the scene renders to prevent stuttering during gameplay.
+</Note>
+
+---
+
+## Entity Components
+
+### a-entity
+
+Generic container for 3D objects and functionality.
+
+<AccordionGroup>
+  <Accordion title="Background Music Entity">
+    Plays looping background music throughout the game.
+    
+    ```html index.html:21
+    <a-entity id="bgMusic" sound="src: #background-music; loop: true; volume: 0.3"></a-entity>
+    ```
+    
+    <ParamField path="sound.src" type="string">
+      Asset reference: `#background-music`
+    </ParamField>
+    
+    <ParamField path="sound.loop" type="boolean">
+      Set to `true` for continuous playback
+    </ParamField>
+    
+    <ParamField path="sound.volume" type="number">
+      Volume level: `0.3` (30% of maximum)
+    </ParamField>
+  </Accordion>
+
+  <Accordion title="Camera Rig Entity">
+    Contains the player's camera and view controls.
+    
+    ```html index.html:23-30
+    <a-entity id="rig" position="0 1.6 1.2">
+      <a-entity id="camera" camera look-controls wasd-controls="acceleration: 10" rotation="-25 0 0">
+        <a-cursor id="cursor" raycaster="objects: .clickable" material="color: #ff0000" scale="0.5 0.5 0.5"></a-cursor>
+        <a-text id="timerText" value="VIDA: 40s" color="red" position="0 0.5 -1" scale="0.4 0.4 0.4" align="center"></a-text>
+        <a-plane id="deathOverlay" position="0 0 -0.05" width="2" height="2" color="#300" material="opacity: 0; transparent: true"></a-plane>
+      </a-entity>
+    </a-entity>
+    ```
+    
+    <ParamField path="position" type="vector3">
+      `0 1.6 1.2` - Positions camera at human eye level (1.6m) and 1.2m forward
+    </ParamField>
+  </Accordion>
+
+  <Accordion title="Table Structure Entity">
+    Creates the casino table using stacked cylinders.
+    
+    ```html index.html:43-47
+    <a-entity position="0 0 0">
+      <a-cylinder color="#111" position="0 0.4 0" radius="0.05" height="0.8"></a-cylinder>
+      <a-cylinder color="#1a0f00" position="0 0.8 0" radius="1" height="0.08"></a-cylinder> 
+      <a-cylinder color="#002200" position="0 0.8 0" radius="0.95" height="0.04"></a-cylinder>
+    </a-entity>
+    ```
+    
+    **Components:**
+    - Dark pedestal cylinder (table leg)
+    - Brown table surface
+    - Green felt playing surface
+  </Accordion>
+
+  <Accordion title="Board Entity">
+    Container for dynamically generated cards.
+    
+    ```html index.html:49
+    <a-entity id="board" position="-0.3 0.85 0.2" rotation="-90 0 0" scale="0.5 0.5 0.5"></a-entity>
+    ```
+    
+    <ParamField path="position" type="vector3">
+      `-0.3 0.85 0.2` - Positioned just above the table surface
+    </ParamField>
+    
+    <ParamField path="rotation" type="vector3">
+      `-90 0 0` - Rotates the board to lie flat on the table
+    </ParamField>
+    
+    <ParamField path="scale" type="vector3">
+      `0.5 0.5 0.5` - Scales down to appropriate card size
+    </ParamField>
+  </Accordion>
+</AccordionGroup>
+
+---
+
+## Primitive Components
+
+### a-box
+
+Cuboid primitive for cards, walls, and decorative objects.
+
+<AccordionGroup>
+  <Accordion title="Back Wall">
+    ```html index.html:38
+    <a-box src="#stone" position="0 4 -6" width="20" height="10" depth="0.5" color="#333"></a-box>
+    ```
+    
+    <ParamField path="src" type="string">
+      `#stone` - Stone texture reference
+    </ParamField>
+    
+    <ParamField path="position" type="vector3">
+      `0 4 -6` - Centered, 4m high, 6m back
+    </ParamField>
+    
+    <ParamField path="width" type="number">
+      `20` meters wide
+    </ParamField>
+    
+    <ParamField path="height" type="number">
+      `10` meters tall
+    </ParamField>
+    
+    <ParamField path="depth" type="number">
+      `0.5` meters thick
+    </ParamField>
+    
+    <ParamField path="color" type="color">
+      `#333` - Dark gray tint
+    </ParamField>
+  </Accordion>
+
+  <Accordion title="Decorative Box">
+    ```html index.html:40
+    <a-box color="#111" position="-2 0.3 -2" rotation="0 30 0" width="0.6" height="0.6" depth="0.6"></a-box>
+    ```
+    
+    Small dark box rotated 30 degrees for environmental detail.
+  </Accordion>
+
+  <Accordion title="Game Cards (Dynamic)">
+    Cards are dynamically generated via JavaScript.
+    
+    ```javascript index.html:92-98
+    const card = document.createElement('a-box');
+    card.setAttribute('position', `${x} ${y} 0`);
+    card.setAttribute('width', '0.35');
+    card.setAttribute('height', '0.5');
+    card.setAttribute('depth', '0.01');
+    card.setAttribute('src', '#back');
+    card.setAttribute('class', 'clickable');
+    ```
+    
+    <ParamField path="width" type="number">
+      `0.35` - Card width in meters
+    </ParamField>
+    
+    <ParamField path="height" type="number">
+      `0.5` - Card height in meters
+    </ParamField>
+    
+    <ParamField path="depth" type="number">
+      `0.01` - Very thin for realistic card appearance
+    </ParamField>
+    
+    <ParamField path="class" type="string">
+      `clickable` - Makes cards interactive with raycaster
+    </ParamField>
+  </Accordion>
+</AccordionGroup>
+
+---
+
+### a-plane
+
+Flat surface primitive for floor and UI overlays.
+
+<AccordionGroup>
+  <Accordion title="Floor Carpet">
+    ```html index.html:37
+    <a-plane src="#carpet" rotation="-90 0 0" width="30" height="30" color="#222"></a-plane>
+    ```
+    
+    <ParamField path="src" type="string">
+      `#carpet` - Carpet texture reference
+    </ParamField>
+    
+    <ParamField path="rotation" type="vector3">
+      `-90 0 0` - Rotates to horizontal position
+    </ParamField>
+    
+    <ParamField path="width" type="number">
+      `30` meters wide
+    </ParamField>
+    
+    <ParamField path="height" type="number">
+      `30` meters deep (height becomes depth when rotated)
+    </ParamField>
+    
+    <ParamField path="color" type="color">
+      `#222` - Dark gray tint for horror atmosphere
+    </ParamField>
+  </Accordion>
+
+  <Accordion title="Death Overlay">
+    ```html index.html:28
+    <a-plane id="deathOverlay" position="0 0 -0.05" width="2" height="2" color="#300" material="opacity: 0; transparent: true"></a-plane>
+    ```
+    
+    Fades to red when the player dies.
+    
+    <ParamField path="position" type="vector3">
+      `0 0 -0.05` - Positioned in front of camera
+    </ParamField>
+    
+    <ParamField path="material.opacity" type="number">
+      Starts at `0` (invisible), animates to `1` on death
+    </ParamField>
+    
+    <ParamField path="material.transparent" type="boolean">
+      `true` - Enables opacity transitions
+    </ParamField>
+  </Accordion>
+</AccordionGroup>
+
+---
+
+### a-cylinder
+
+Cylindrical primitive for table structure and decorative objects.
+
+<AccordionGroup>
+  <Accordion title="Table Leg">
+    ```html index.html:44
+    <a-cylinder color="#111" position="0 0.4 0" radius="0.05" height="0.8"></a-cylinder>
+    ```
+    
+    <ParamField path="color" type="color">
+      `#111` - Nearly black
+    </ParamField>
+    
+    <ParamField path="radius" type="number">
+      `0.05` - Thin 5cm radius
+    </ParamField>
+    
+    <ParamField path="height" type="number">
+      `0.8` meters tall
+    </ParamField>
+  </Accordion>
+
+  <Accordion title="Table Surface">
+    ```html index.html:45
+    <a-cylinder color="#1a0f00" position="0 0.8 0" radius="1" height="0.08"></a-cylinder>
+    ```
+    
+    <ParamField path="color" type="color">
+      `#1a0f00` - Dark brown wood color
+    </ParamField>
+    
+    <ParamField path="radius" type="number">
+      `1` meter radius
+    </ParamField>
+    
+    <ParamField path="height" type="number">
+      `0.08` - Thin 8cm height for tabletop
+    </ParamField>
+  </Accordion>
+
+  <Accordion title="Green Felt">
+    ```html index.html:46
+    <a-cylinder color="#002200" position="0 0.81 0" radius="0.95" height="0.04"></a-cylinder>
+    ```
+    
+    <ParamField path="color" type="color">
+      `#002200` - Casino green
+    </ParamField>
+    
+    <ParamField path="radius" type="number">
+      `0.95` - Slightly smaller than table surface
+    </ParamField>
+    
+    <ParamField path="position" type="vector3">
+      `0 0.81 0` - Positioned just above the table surface
+    </ParamField>
+  </Accordion>
+
+  <Accordion title="Decorative Cylinder">
+    ```html index.html:41
+    <a-cylinder color="#050505" position="2 0.5 -2.5" radius="0.3" height="1" rotation="0 0 15"></a-cylinder>
+    ```
+    
+    Small tilted cylinder for environmental detail.
+  </Accordion>
+</AccordionGroup>
+
+---
+
+### a-sky
+
+Skybox that wraps around the entire scene.
+
+```html index.html:36
+<a-sky color="#000"></a-sky>
+```
+
+<ParamField path="color" type="color">
+  `#000` - Pure black for maximum horror atmosphere
+</ParamField>
+
+<Info>
+  The black sky combined with exponential red fog creates the signature Forsaken Casino atmosphere.
+</Info>
+
+---
+
+## Lighting
+
+### a-light
+
+Illumination sources for the scene.
+
+<AccordionGroup>
+  <Accordion title="Ambient Light">
+    ```html index.html:32
+    <a-light type="ambient" color="#444"></a-light>
+    ```
+    
+    <ParamField path="type" type="string">
+      `ambient` - Provides base illumination to all objects
+    </ParamField>
+    
+    <ParamField path="color" type="color">
+      `#444` - Dim gray light
+    </ParamField>
+  </Accordion>
+
+  <Accordion title="Flickering Point Light">
+    ```html index.html:33-34
+    <a-light id="flicker" type="point" intensity="1" position="0 3 0" color="#f00"
+             animation="property: intensity; from: 0.2; to: 1.2; dur: 150; loop: true; dir: alternate"></a-light>
+    ```
+    
+    <ParamField path="type" type="string">
+      `point` - Emits light in all directions from a point
+    </ParamField>
+    
+    <ParamField path="intensity" type="number">
+      `1` - Base intensity level
+    </ParamField>
+    
+    <ParamField path="position" type="vector3">
+      `0 3 0` - 3 meters above the table
+    </ParamField>
+    
+    <ParamField path="color" type="color">
+      `#f00` - Blood red
+    </ParamField>
+    
+    <ParamField path="animation" type="object">
+      Creates ominous flickering effect:
+      - `property`: `intensity` - Animates brightness
+      - `from`: `0.2` - Minimum brightness (very dim)
+      - `to`: `1.2` - Maximum brightness
+      - `dur`: `150` - 150ms per cycle
+      - `loop`: `true` - Continuous flickering
+      - `dir`: `alternate` - Smooth back-and-forth
+    </ParamField>
+  </Accordion>
+</AccordionGroup>
+
+---
+
+## UI Components
+
+### a-cursor
+
+VR cursor for interaction.
+
+```html index.html:25
+<a-cursor id="cursor" raycaster="objects: .clickable" material="color: #ff0000" scale="0.5 0.5 0.5"></a-cursor>
+```
+
+<ParamField path="raycaster.objects" type="string">
+  `.clickable` - Only detects objects with the "clickable" class
+</ParamField>
+
+<ParamField path="material.color" type="color">
+  `#ff0000` - Red cursor matching the horror theme
+</ParamField>
+
+<ParamField path="scale" type="vector3">
+  `0.5 0.5 0.5` - Reduced to 50% size for subtlety
+</ParamField>
+
+---
+
+### a-text
+
+Rendered text in 3D space.
+
+<AccordionGroup>
+  <Accordion title="Timer Text">
+    ```html index.html:27
+    <a-text id="timerText" value="VIDA: 40s" color="red" position="0 0.5 -1" scale="0.4 0.4 0.4" align="center"></a-text>
+    ```
+    
+    <ParamField path="value" type="string">
+      Initial text: `VIDA: 40s` (LIFE: 40s in Spanish)
+    </ParamField>
+    
+    <ParamField path="color" type="color">
+      `red` - Urgent red color
+    </ParamField>
+    
+    <ParamField path="position" type="vector3">
+      `0 0.5 -1` - Upper center of player's view
+    </ParamField>
+    
+    <ParamField path="scale" type="vector3">
+      `0.4 0.4 0.4` - Scaled down to readable size
+    </ParamField>
+    
+    <ParamField path="align" type="string">
+      `center` - Center-aligned text
+    </ParamField>
+  </Accordion>
+
+  <Accordion title="Status Text">
+    ```html index.html:51
+    <a-text id="statusText" value="" color="red" position="0 2 -3" scale="2 2 2" align="center"></a-text>
+    ```
+    
+    Displays win/loss messages:
+    - "PERDISTE TU ALMA" (YOU LOST YOUR SOUL) on death
+    - "SALISTE CON VIDA" (YOU ESCAPED ALIVE) on victory
+    
+    <ParamField path="position" type="vector3">
+      `0 2 -3` - Large text centered in the distance
+    </ParamField>
+    
+    <ParamField path="scale" type="vector3">
+      `2 2 2` - Double size for dramatic impact
+    </ParamField>
+  </Accordion>
+</AccordionGroup>
+
+---
+
+## Camera Controls
+
+### camera
+
+First-person camera component.
+
+```html index.html:24
+<a-entity id="camera" camera look-controls wasd-controls="acceleration: 10" rotation="-25 0 0">
+```
+
+<ParamField path="camera" type="component">
+  Enables the entity to act as the player's viewpoint
+</ParamField>
+
+<ParamField path="look-controls" type="component">
+  Enables mouse/VR headset rotation controls
+</ParamField>
+
+<ParamField path="wasd-controls" type="component">
+  Keyboard movement controls with custom acceleration
+  
+  **Attributes:**
+  - `acceleration`: `10` - Fast movement speed
+</ParamField>
+
+<ParamField path="rotation" type="vector3">
+  `-25 0 0` - Camera tilted 25 degrees downward to view the table
+</ParamField>
+
+<Note>
+  The downward tilt ensures players naturally see the card table when entering the game.
+</Note>
+
+---
+
+## Animation System
+
+A-Frame's animation component is used extensively for dynamic effects:
+
+<CardGroup cols={2}>
+  <Card title="Light Flickering" icon="lightbulb">
+    Continuous intensity oscillation (150ms cycles)
+  </Card>
+  
+  <Card title="Card Flipping" icon="rotate">
+    180-degree rotation over 250ms
+  </Card>
+  
+  <Card title="Card Disappearing" icon="eye-slash">
+    Scale to zero over 300ms when matched
+  </Card>
+  
+  <Card title="Death Overlay" icon="skull">
+    Opacity fade from 0 to 1 over 1000ms
+  </Card>
+</CardGroup>
+
+### Example Animations
+
+```javascript
+// Card flip animation
+card.setAttribute('animation', 'property: rotation; to: 0 180 0; dur: 250');
+
+// Card disappear animation
+card.setAttribute('animation', 'property: scale; to: 0 0 0; dur: 300');
+
+// Death overlay fade
+deathOverlay.setAttribute('animation', 'property: material.opacity; to: 1; dur: 1000');
+```
+
+---
+
+## Component Interactions
+
+<Info>
+  Components interact through JavaScript event listeners and attribute modifications. Cards listen for `mouseenter` events triggered when the cursor raycaster intersects them.
+</Info>
+
+### Event Flow
+
+1. **Cursor raycaster** detects `.clickable` objects
+2. **mouseenter** event fires on card hover
+3. **JavaScript** modifies component attributes dynamically
+4. **A-Frame** updates the 3D scene in real-time
+
+```javascript index.html:103-110
+card.addEventListener('mouseenter', function() {
+  if (lockBoard || this.dataset.flipped === "true" || timeLeft <= 0) return;
+  
+  startTimer();
+  new Audio(document.querySelector('#click-sound').src).play();
+  flip(this);
+});
+```

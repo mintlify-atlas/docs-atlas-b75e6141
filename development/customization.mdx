@@ -1,0 +1,758 @@
+---
+title: 'Customization Guide'
+description: 'Modify cards, colors, timer, animations, audio, and environment in Forsaken Casino'
+---
+
+# Customization Guide
+
+Forsaken Casino is highly customizable. This guide shows you how to modify every aspect of the game, from card images to atmospheric effects.
+
+## Card Customization
+
+### Adding More Card Pairs
+
+The game currently uses 4 pairs (8 cards). To add more:
+
+<Steps>
+  <Step title="Add Images to Assets">
+    Add new image elements in the `<a-assets>` block:
+    
+    ```html
+    <a-assets>
+      <img id="img1" src="img/img1.jpg">
+      <img id="img2" src="img/img2.jpg">
+      <img id="img3" src="img/img3.jpg">
+      <img id="img4" src="img/img4.jpg">
+      <!-- Add more pairs -->
+      <img id="img5" src="img/img5.jpg">
+      <img id="img6" src="img/img6.jpg">
+      <img id="back" src="img/atras.jpeg">
+      <!-- ... rest of assets -->
+    </a-assets>
+    ```
+  </Step>
+  
+  <Step title="Update cardData Array">
+    Modify the `cardData` array (source: index.html:65):
+    
+    ```javascript
+    // Original (4 pairs)
+    const cardData = ['img1', 'img1', 'img2', 'img2', 'img3', 'img3', 'img4', 'img4'];
+    
+    // Extended (6 pairs = 12 cards)
+    const cardData = ['img1', 'img1', 'img2', 'img2', 'img3', 'img3', 
+                      'img4', 'img4', 'img5', 'img5', 'img6', 'img6'];
+    ```
+  </Step>
+  
+  <Step title="Adjust Grid Layout">
+    Modify the position calculation in `initGame()` (source: index.html:90-91):
+    
+    ```javascript
+    // Original: 4x2 grid
+    const x = (index % 4) * 0.4; 
+    const y = Math.floor(index / 4) * -0.6;
+    
+    // For 6 pairs (3x4 grid)
+    const x = (index % 3) * 0.4; 
+    const y = Math.floor(index / 3) * -0.6;
+    
+    // For 6 pairs (4x3 grid - wider layout)
+    const x = (index % 4) * 0.4; 
+    const y = Math.floor(index / 4) * -0.6;
+    ```
+    
+    <Info>
+    Change `index % 4` to control columns, and the spacing `0.4` to control card separation.
+    </Info>
+  </Step>
+  
+  <Step title="Update Win Condition">
+    Change the win threshold in `flip()` (source: index.html:138):
+    
+    ```javascript
+    // Original
+    if (pairsFound === 4) win();
+    
+    // For 6 pairs
+    if (pairsFound === 6) win();
+    ```
+  </Step>
+</Steps>
+
+<Warning>
+Increasing pairs makes the game harder! Consider increasing the timer duration accordingly.
+</Warning>
+
+### Changing Card Textures
+
+Replace the card images by updating the asset sources:
+
+```html
+<!-- Horror theme (current) -->
+<img id="img1" src="img/img1.jpg">
+
+<!-- Change to your own images -->
+<img id="img1" src="img/skull.png">
+<img id="img2" src="img/ghost.png">
+<img id="img3" src="img/vampire.png">
+<img id="img4" src="img/demon.png">
+```
+
+<Tip>
+**Image Requirements:**
+- Format: JPG or PNG
+- Recommended size: 512x512px or higher
+- Aspect ratio: Keep consistent for best appearance
+- Compression: Optimize for web to reduce load times
+</Tip>
+
+### Card Back Customization
+
+Change the card back texture (source: index.html:14):
+
+```html
+<!-- Current -->
+<img id="back" src="img/atras.jpeg">
+
+<!-- Custom design -->
+<img id="back" src="img/skull-pattern.png">
+```
+
+The back texture is applied in `initGame()` (source: index.html:98):
+
+```javascript
+card.setAttribute('src', '#back');
+```
+
+### Card Dimensions
+
+Adjust card size in `initGame()` (source: index.html:95-97):
+
+```javascript
+// Current dimensions
+card.setAttribute('width', '0.35'); 
+card.setAttribute('height', '0.5'); 
+card.setAttribute('depth', '0.01');
+
+// Larger cards
+card.setAttribute('width', '0.45'); 
+card.setAttribute('height', '0.6'); 
+card.setAttribute('depth', '0.02'); // Thicker cards
+
+// Square cards
+card.setAttribute('width', '0.4'); 
+card.setAttribute('height', '0.4'); 
+card.setAttribute('depth', '0.01');
+```
+
+## Color Customization
+
+### Theme Colors
+
+The game uses a dark red horror palette. Change to different themes:
+
+<Tabs>
+  <Tab title="Dark Blue Theme">
+    ```html
+    <!-- Scene fog -->
+    <a-scene fog="type: exponential; color: #000a1a; density: 0.15">
+    
+    <!-- Flickering light -->
+    <a-light id="flicker" type="point" color="#00f">
+    
+    <!-- Cursor -->
+    <a-cursor material="color: #0088ff">
+    
+    <!-- Timer text -->
+    <a-text id="timerText" color="#00ccff">
+    
+    <!-- Death overlay -->
+    <a-plane id="deathOverlay" color="#003">
+    ```
+  </Tab>
+  
+  <Tab title="Purple Horror">
+    ```html
+    <!-- Scene fog -->
+    <a-scene fog="type: exponential; color: #1a0020; density: 0.15">
+    
+    <!-- Flickering light -->
+    <a-light id="flicker" type="point" color="#a0f">
+    
+    <!-- Cursor -->
+    <a-cursor material="color: #ff00ff">
+    
+    <!-- Timer text -->
+    <a-text id="timerText" color="#ff00ff">
+    
+    <!-- Death overlay -->
+    <a-plane id="deathOverlay" color="#303">
+    ```
+  </Tab>
+  
+  <Tab title="Green Matrix">
+    ```html
+    <!-- Scene fog -->
+    <a-scene fog="type: exponential; color: #001a00; density: 0.15">
+    
+    <!-- Flickering light -->
+    <a-light id="flicker" type="point" color="#0f0">
+    
+    <!-- Cursor -->
+    <a-cursor material="color: #00ff00">
+    
+    <!-- Timer text -->
+    <a-text id="timerText" color="#00ff00">
+    
+    <!-- Death overlay -->
+    <a-plane id="deathOverlay" color="#030">
+    ```
+  </Tab>
+</Tabs>
+
+### Table Colors
+
+Customize the poker table appearance (source: index.html:43-47):
+
+```html
+<!-- Current: Dark table with green felt -->
+<a-entity position="0 0 0">
+  <a-cylinder color="#111" position="0 0.4 0" radius="0.05" height="0.8"></a-cylinder>
+  <a-cylinder color="#1a0f00" position="0 0.8 0" radius="1" height="0.08"></a-cylinder> 
+  <a-cylinder color="#002200" position="0 0.81 0" radius="0.95" height="0.04"></a-cylinder>
+</a-entity>
+
+<!-- Luxury gold table -->
+<a-entity position="0 0 0">
+  <a-cylinder color="#333" position="0 0.4 0" radius="0.05" height="0.8"></a-cylinder>
+  <a-cylinder color="#8B4513" position="0 0.8 0" radius="1" height="0.08"></a-cylinder> 
+  <a-cylinder color="#FFD700" position="0 0.81 0" radius="0.95" height="0.04"></a-cylinder>
+</a-entity>
+```
+
+## Timer Duration
+
+### Adjusting Time Limit
+
+Change the starting time (source: index.html:60):
+
+```javascript
+// Current: 40 seconds
+let timeLeft = 40;
+
+// Easy mode: 60 seconds
+let timeLeft = 60;
+
+// Hard mode: 25 seconds
+let timeLeft = 25;
+
+// Nightmare mode: 15 seconds
+let timeLeft = 15;
+```
+
+<Warning>
+The HUD initially displays "VIDA: 40s". Update the initial text element too:
+
+```html
+<!-- Update this to match your timeLeft value -->
+<a-text id="timerText" value="VIDA: 60s" color="red"></a-text>
+```
+</Warning>
+
+### Timer Speed Modification
+
+Change countdown speed in `startTimer()` (source: index.html:71):
+
+```javascript
+// Current: 1 second per tick
+timerInterval = setInterval(() => {
+    timeLeft--;
+    timerText.setAttribute('value', `VIDA: ${timeLeft}s`);
+    if(timeLeft <= 0) die();
+}, 1000);
+
+// Half-speed (2 seconds per tick)
+timerInterval = setInterval(() => {
+    timeLeft--;
+    timerText.setAttribute('value', `VIDA: ${timeLeft}s`);
+    if(timeLeft <= 0) die();
+}, 2000);
+
+// Accelerating timer (gets faster over time)
+let tickSpeed = 1000;
+timerInterval = setInterval(() => {
+    timeLeft--;
+    timerText.setAttribute('value', `VIDA: ${timeLeft}s`);
+    if(timeLeft <= 0) die();
+    
+    // Speed up every 10 seconds
+    if (timeLeft % 10 === 0 && tickSpeed > 200) {
+        clearInterval(timerInterval);
+        tickSpeed -= 100;
+        startTimer(); // Restart with faster speed
+    }
+}, tickSpeed);
+```
+
+### Changing Timer Display Text
+
+Customize the HUD text format (source: index.html:73):
+
+```javascript
+// Current: "VIDA: 40s"
+timerText.setAttribute('value', `VIDA: ${timeLeft}s`);
+
+// English version
+timerText.setAttribute('value', `TIME: ${timeLeft}s`);
+
+// Dramatic version
+timerText.setAttribute('value', `SOUL FADING: ${timeLeft}s`);
+
+// Minutes:seconds format
+const minutes = Math.floor(timeLeft / 60);
+const seconds = timeLeft % 60;
+timerText.setAttribute('value', `${minutes}:${seconds.toString().padStart(2, '0')}`);
+```
+
+## Animation Customization
+
+### Card Flip Speed
+
+Adjust flip animation timing in `flip()` (source: index.html:122-123):
+
+```javascript
+// Current: 250ms flip, texture swap at 125ms
+card.setAttribute('animation', 'property: rotation; to: 0 180 0; dur: 250');
+setTimeout(() => card.setAttribute('src', '#' + card.dataset.id), 125);
+
+// Slow motion: 500ms flip
+card.setAttribute('animation', 'property: rotation; to: 0 180 0; dur: 500');
+setTimeout(() => card.setAttribute('src', '#' + card.dataset.id), 250);
+
+// Lightning fast: 100ms flip
+card.setAttribute('animation', 'property: rotation; to: 0 180 0; dur: 100');
+setTimeout(() => card.setAttribute('src', '#' + card.dataset.id), 50);
+```
+
+<Info>
+The texture swap timeout should always be half the animation duration for smooth flipping.
+</Info>
+
+### Match Animation
+
+Change how matched pairs disappear (source: index.html:133-134):
+
+```javascript
+// Current: Scale to zero
+card1.setAttribute('animation', 'property: scale; to: 0 0 0; dur: 300');
+card2.setAttribute('animation', 'property: scale; to: 0 0 0; dur: 300');
+
+// Fade out
+card1.setAttribute('animation', 'property: material.opacity; to: 0; dur: 500');
+card2.setAttribute('animation', 'property: material.opacity; to: 0; dur: 500');
+
+// Spin and shrink
+card1.setAttribute('animation__rotate', 'property: rotation; to: 0 360 0; dur: 600');
+card1.setAttribute('animation__scale', 'property: scale; to: 0 0 0; dur: 600');
+card2.setAttribute('animation__rotate', 'property: rotation; to: 0 360 0; dur: 600');
+card2.setAttribute('animation__scale', 'property: scale; to: 0 0 0; dur: 600');
+
+// Fly away upward
+card1.setAttribute('animation__up', 'property: position; to: 0 5 0; dur: 800; easing: easeInQuad');
+card1.setAttribute('animation__fade', 'property: material.opacity; to: 0; dur: 800');
+card2.setAttribute('animation__up', 'property: position; to: 0 5 0; dur: 800; easing: easeInQuad');
+card2.setAttribute('animation__fade', 'property: material.opacity; to: 0; dur: 800');
+```
+
+### Delay Timings
+
+Adjust delays between animations in `flip()`:
+
+```javascript
+// Match found delay (source: index.html:132)
+setTimeout(() => {
+    // Remove cards
+}, 600); // Current delay before removal
+
+// No match delay (source: index.html:142)
+setTimeout(() => {
+    // Start flip back
+}, 800); // Current delay before flipping back
+
+// Longer delays give more time to memorize:
+setTimeout(() => { /* ... */ }, 1200); // 1.2 seconds
+
+// Shorter for faster gameplay:
+setTimeout(() => { /* ... */ }, 400); // 0.4 seconds
+```
+
+### Flickering Light Effect
+
+Modify the atmospheric light flicker (source: index.html:33-34):
+
+```html
+<!-- Current: Fast flicker (150ms) -->
+<a-light id="flicker" type="point" intensity="1" position="0 3 0" color="#f00"
+         animation="property: intensity; from: 0.2; to: 1.2; dur: 150; 
+                    loop: true; dir: alternate"></a-light>
+
+<!-- Slow ominous pulse (1 second) -->
+<a-light id="flicker" type="point" intensity="1" position="0 3 0" color="#f00"
+         animation="property: intensity; from: 0.3; to: 1.5; dur: 1000; 
+                    loop: true; dir: alternate; easing: easeInOutSine"></a-light>
+
+<!-- Erratic flicker -->
+<a-light id="flicker" type="point" intensity="1" position="0 3 0" color="#f00"
+         animation="property: intensity; from: 0.1; to: 1.8; dur: 80; 
+                    loop: true; dir: alternate"></a-light>
+
+<!-- No flicker (constant) -->
+<a-light id="flicker" type="point" intensity="1" position="0 3 0" color="#f00"></a-light>
+```
+
+## Audio Customization
+
+### Replacing Sound Effects
+
+Change audio files in assets (source: index.html:17-18):
+
+```html
+<!-- Current sounds -->
+<audio id="click-sound" src="cartas.mp3"></audio>
+<audio id="background-music" src="fondo.mp3" preload="auto"></audio>
+
+<!-- Replace with your own -->
+<audio id="click-sound" src="sounds/card-flip.mp3"></audio>
+<audio id="background-music" src="sounds/creepy-ambience.mp3" preload="auto"></audio>
+```
+
+<Tip>
+**Audio Format Recommendations:**
+- Format: MP3 or OGG for best browser compatibility
+- Sample rate: 44.1kHz
+- Bit rate: 128kbps for music, 64kbps for SFX
+- Length: Keep SFX under 1 second for snappy feedback
+</Tip>
+
+### Background Music Volume
+
+Adjust music volume (source: index.html:21):
+
+```html
+<!-- Current: 30% volume -->
+<a-entity id="bgMusic" sound="src: #background-music; loop: true; volume: 0.3"></a-entity>
+
+<!-- Louder: 60% volume -->
+<a-entity id="bgMusic" sound="src: #background-music; loop: true; volume: 0.6"></a-entity>
+
+<!-- Quiet: 10% volume -->
+<a-entity id="bgMusic" sound="src: #background-music; loop: true; volume: 0.1"></a-entity>
+
+<!-- Silent (no music) -->
+<a-entity id="bgMusic" sound="src: #background-music; loop: true; volume: 0"></a-entity>
+```
+
+### Adding Sound Effects
+
+Add sounds for different events:
+
+<Steps>
+  <Step title="Add Audio Assets">
+    ```html
+    <a-assets>
+      <audio id="click-sound" src="cartas.mp3"></audio>
+      <audio id="background-music" src="fondo.mp3" preload="auto"></audio>
+      <!-- New sound effects -->
+      <audio id="match-sound" src="sounds/match.mp3"></audio>
+      <audio id="wrong-sound" src="sounds/wrong.mp3"></audio>
+      <audio id="win-sound" src="sounds/victory.mp3"></audio>
+      <audio id="lose-sound" src="sounds/death.mp3"></audio>
+    </a-assets>
+    ```
+  </Step>
+  
+  <Step title="Play on Match Found">
+    In the `flip()` function's match branch (source: index.html:130-139):
+    
+    ```javascript
+    if (card1.dataset.id === card2.dataset.id) {
+        // Play match sound
+        new Audio(document.querySelector('#match-sound').src).play();
+        
+        setTimeout(() => {
+            card1.setAttribute('animation', 'property: scale; to: 0 0 0; dur: 300');
+            card2.setAttribute('animation', 'property: scale; to: 0 0 0; dur: 300');
+            pairsFound++;
+            flippedCards = [];
+            lockBoard = false;
+            if (pairsFound === 4) win();
+        }, 600);
+    }
+    ```
+  </Step>
+  
+  <Step title="Play on No Match">
+    In the else branch (source: index.html:140-154):
+    
+    ```javascript
+    else {
+        // Play wrong sound
+        new Audio(document.querySelector('#wrong-sound').src).play();
+        
+        setTimeout(() => {
+            // ... flip back logic
+        }, 800);
+    }
+    ```
+  </Step>
+  
+  <Step title="Play on Win/Loss">
+    ```javascript
+    function win() {
+        clearInterval(timerInterval);
+        new Audio(document.querySelector('#win-sound').src).play();
+        statusText.setAttribute('value', 'SALISTE CON VIDA');
+        setTimeout(() => location.reload(), 4000);
+    }
+    
+    function die() {
+        clearInterval(timerInterval);
+        new Audio(document.querySelector('#lose-sound').src).play();
+        statusText.setAttribute('value', 'PERDISTE TU ALMA');
+        deathOverlay.setAttribute('animation', 'property: material.opacity; to: 1; dur: 1000');
+        setTimeout(() => location.reload(), 3000);
+    }
+    ```
+  </Step>
+</Steps>
+
+## Environment Customization
+
+### Fog Density
+
+Control visibility distance (source: index.html:8):
+
+```html
+<!-- Current: Medium fog -->
+<a-scene fog="type: exponential; color: #0a0000; density: 0.15">
+
+<!-- Heavy fog (claustrophobic) -->
+<a-scene fog="type: exponential; color: #0a0000; density: 0.3">
+
+<!-- Light fog (clearer view) -->
+<a-scene fog="type: exponential; color: #0a0000; density: 0.05">
+
+<!-- No fog -->
+<a-scene>
+```
+
+### Floor and Wall Textures
+
+Change environment textures (source: index.html:15-16, 37-38):
+
+```html
+<!-- Current textures -->
+<img id="carpet" src="piso.jpg">
+<img id="stone" src="lados.jpg">
+
+<!-- Replace with your own -->
+<img id="carpet" src="textures/wood-floor.jpg">
+<img id="stone" src="textures/brick-wall.jpg">
+
+<!-- Apply to scene elements -->
+<a-plane src="#carpet" rotation="-90 0 0" width="30" height="30" color="#222"></a-plane>
+<a-box src="#stone" position="0 4 -6" width="20" height="10" depth="0.5" color="#333"></a-box>
+```
+
+### Sky Color
+
+Change background color (source: index.html:36):
+
+```html
+<!-- Current: Pure black -->
+<a-sky color="#000"></a-sky>
+
+<!-- Dark red gradient effect -->
+<a-sky color="#1a0000"></a-sky>
+
+<!-- Night blue -->
+<a-sky color="#000033"></a-sky>
+
+<!-- Sky texture instead of solid color -->
+<a-assets>
+  <img id="sky-texture" src="textures/stars.jpg">
+</a-assets>
+<a-sky src="#sky-texture"></a-sky>
+```
+
+### Adding Decorative Objects
+
+Add more props to enhance atmosphere (source: index.html:40-41):
+
+```html
+<!-- Current props -->
+<a-box color="#111" position="-2 0.3 -2" rotation="0 30 0" width="0.6" height="0.6" depth="0.6"></a-box>
+<a-cylinder color="#050505" position="2 0.5 -2.5" radius="0.3" height="1" rotation="0 0 15"></a-cylinder>
+
+<!-- Add candles -->
+<a-cylinder color="#222" position="-1.5 0.84 -0.5" radius="0.03" height="0.15"></a-cylinder>
+<a-light type="point" position="-1.5 0.92 -0.5" color="#ff6600" intensity="0.3"></a-light>
+
+<!-- Add skull decoration -->
+<a-sphere color="#ddd" position="2 0.9 0.5" radius="0.08"></a-sphere>
+<a-box color="#ddd" position="2 0.85 0.5" width="0.1" height="0.06" depth="0.09"></a-box>
+
+<!-- Add scattered cards on floor -->
+<a-box src="#back" position="-2.5 0.01 -1" rotation="-90 25 0" width="0.2" height="0.3" depth="0.01"></a-box>
+<a-box src="#img3" position="2.8 0.01 -1.5" rotation="-90 -15 0" width="0.2" height="0.3" depth="0.01"></a-box>
+```
+
+### Ambient Lighting
+
+Adjust overall brightness (source: index.html:32):
+
+```html
+<!-- Current: Dark ambient -->
+<a-light type="ambient" color="#444"></a-light>
+
+<!-- Brighter (easier to see) -->
+<a-light type="ambient" color="#888"></a-light>
+
+<!-- Nearly black (maximum horror) -->
+<a-light type="ambient" color="#111"></a-light>
+
+<!-- Colored ambient (blue tint) -->
+<a-light type="ambient" color="#224466"></a-light>
+```
+
+## Advanced Customization
+
+### Custom Win/Loss Messages
+
+Change text in game-over functions (source: index.html:81, 160):
+
+```javascript
+// Win message
+statusText.setAttribute('value', 'SALISTE CON VIDA');
+
+// Custom variations:
+statusText.setAttribute('value', 'YOU ESCAPED!');
+statusText.setAttribute('value', 'FREEDOM ACHIEVED');
+statusText.setAttribute('value', 'VICTORY!');
+
+// Loss message
+statusText.setAttribute('value', 'PERDISTE TU ALMA');
+
+// Custom variations:
+statusText.setAttribute('value', 'GAME OVER');
+statusText.setAttribute('value', 'YOUR SOUL IS MINE');
+statusText.setAttribute('value', 'TIME EXPIRED');
+```
+
+### Death Overlay Effect
+
+Modify the red fade effect (source: index.html:82):
+
+```javascript
+// Current: Fade red to full opacity over 1 second
+deathOverlay.setAttribute('animation', 'property: material.opacity; to: 1; dur: 1000');
+
+// Faster death effect
+deathOverlay.setAttribute('animation', 'property: material.opacity; to: 1; dur: 500');
+
+// Slow dramatic fade
+deathOverlay.setAttribute('animation', 'property: material.opacity; to: 1; dur: 3000');
+
+// Partial fade (semi-transparent)
+deathOverlay.setAttribute('animation', 'property: material.opacity; to: 0.7; dur: 1000');
+
+// Flashing effect
+deathOverlay.setAttribute('animation', 'property: material.opacity; to: 1; dur: 200; loop: 3; dir: alternate');
+```
+
+### Camera Position and Angle
+
+Adjust player viewpoint (source: index.html:23-24):
+
+```html
+<!-- Current: Standing, looking down at table -->
+<a-entity id="rig" position="0 1.6 1.2">
+  <a-entity id="camera" camera look-controls wasd-controls="acceleration: 10" 
+            rotation="-25 0 0">
+
+<!-- Sitting at table (lower height) -->
+<a-entity id="rig" position="0 1.0 1.2">
+  <a-entity id="camera" camera look-controls wasd-controls="acceleration: 10" 
+            rotation="-35 0 0">
+
+<!-- Further back view -->
+<a-entity id="rig" position="0 1.6 2.5">
+  <a-entity id="camera" camera look-controls wasd-controls="acceleration: 10" 
+            rotation="-20 0 0">
+
+<!-- Close-up view -->
+<a-entity id="rig" position="0 1.6 0.5">
+  <a-entity id="camera" camera look-controls wasd-controls="acceleration: 10" 
+            rotation="-40 0 0">
+```
+
+### Disable WASD Controls (VR-only)
+
+Remove keyboard movement for pure VR experience:
+
+```html
+<!-- Current: Desktop and VR controls -->
+<a-entity id="camera" camera look-controls wasd-controls="acceleration: 10">
+
+<!-- VR only (no keyboard movement) -->
+<a-entity id="camera" camera look-controls>
+```
+
+## Quick Reference
+
+<CardGroup cols={2}>
+  <Card title="Card Setup" icon="cards">
+    - Assets: index.html:9-14
+    - cardData: index.html:65
+    - Grid layout: index.html:90-91
+    - Dimensions: index.html:95-97
+  </Card>
+  
+  <Card title="Timer System" icon="clock">
+    - Initial time: index.html:60
+    - Countdown speed: index.html:71
+    - Display format: index.html:73
+    - HUD position: index.html:27
+  </Card>
+  
+  <Card title="Animations" icon="magic">
+    - Flip speed: index.html:122
+    - Match removal: index.html:133-134
+    - Light flicker: index.html:33-34
+    - Death fade: index.html:82
+  </Card>
+  
+  <Card title="Audio" icon="music">
+    - Assets: index.html:17-18
+    - Music volume: index.html:21
+    - Flip sound: index.html:108
+    - Music start: index.html:70
+  </Card>
+</CardGroup>
+
+## Next Steps
+
+<CardGroup cols={3}>
+  <Card title="Game Logic" icon="code" href="/development/game-logic">
+    Understand the JavaScript implementation
+  </Card>
+  
+  <Card title="Architecture" icon="sitemap" href="/development/architecture">
+    Learn the A-Frame structure
+  </Card>
+  
+  <Card title="A-Frame Components" icon="cube" href="/reference/aframe-components">
+    View the complete component reference
+  </Card>
+</CardGroup>

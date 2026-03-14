@@ -1,0 +1,347 @@
+---
+title: 'System Requirements'
+description: 'Browser compatibility, VR headset support, and technical requirements for Forsaken Casino'
+---
+
+## Overview
+
+Forsaken Casino is built on A-Frame 1.4.0, a web framework for building virtual reality experiences. This page outlines the technical requirements for running the game.
+
+<Info>
+The game runs in both standard web browsers (desktop mode) and VR headsets (immersive mode).
+</Info>
+
+## A-Frame Framework
+
+The game is built with A-Frame 1.4.0, loaded via CDN:
+
+```html index.html
+<script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
+```
+
+<Note>
+A-Frame 1.4.0 requires no installation or build process. The framework is loaded directly from the CDN.
+</Note>
+
+## Browser Compatibility
+
+### Desktop Browsers
+
+Forsaken Casino works in all modern browsers that support WebGL:
+
+<CardGroup cols={2}>
+  <Card title="Google Chrome" icon="chrome">
+    **Version:** 90+
+    
+    **Recommended:** Best performance and WebXR support
+  </Card>
+  <Card title="Mozilla Firefox" icon="firefox">
+    **Version:** 88+
+    
+    **Recommended:** Excellent WebXR support
+  </Card>
+  <Card title="Microsoft Edge" icon="edge">
+    **Version:** 90+ (Chromium-based)
+    
+    **Status:** Full support
+  </Card>
+  <Card title="Safari" icon="safari">
+    **Version:** 14+
+    
+    **Note:** Limited WebXR support (desktop mode only)
+  </Card>
+</CardGroup>
+
+### Mobile Browsers
+
+<Warning>
+Mobile VR support varies by browser and device. Testing recommended.
+</Warning>
+
+| Browser | Android | iOS | VR Support |
+|---------|---------|-----|------------|
+| Chrome | ✅ Full | ✅ Full | ✅ WebXR |
+| Firefox | ✅ Full | ✅ Full | ✅ WebXR |
+| Safari | ❌ N/A | ⚠️ Limited | ❌ No WebXR |
+| Samsung Internet | ✅ Full | ❌ N/A | ✅ WebXR |
+
+## VR Headset Support
+
+### WebXR-Compatible Headsets
+
+A-Frame 1.4.0 uses the WebXR Device API for VR support. Compatible headsets include:
+
+<Steps>
+  <Step title="Meta Quest (Oculus Quest)">
+    **Models:** Quest, Quest 2, Quest 3, Quest Pro
+    
+    **Browser:** Meta Quest Browser or Firefox Reality
+    
+    **Status:** ✅ Fully supported with 6DOF tracking
+
+    Access the game directly through the headset's browser by entering your server URL (e.g., `http://192.168.1.100:8000`).
+  </Step>
+
+  <Step title="PC VR Headsets">
+    **Models:** HTC Vive, Valve Index, Oculus Rift, Windows Mixed Reality
+    
+    **Requirements:** 
+    - SteamVR or Oculus Runtime
+    - Chrome or Firefox with WebXR enabled
+    - Desktop tethered to headset
+
+    **Status:** ✅ Fully supported
+  </Step>
+
+  <Step title="Mobile VR">
+    **Models:** Google Cardboard, Daydream (deprecated)
+    
+    **Status:** ⚠️ Limited support (legacy WebVR only)
+
+    <Note>
+    Mobile VR via Google Cardboard may require additional browser extensions or legacy WebVR support.
+    </Note>
+  </Step>
+</Steps>
+
+## System Requirements
+
+### Minimum Desktop Requirements
+
+```yaml
+CPU: Dual-core 2.0 GHz
+RAM: 4 GB
+GPU: Integrated graphics with WebGL support
+Storage: 50 MB for game assets
+Network: Required for initial CDN load
+```
+
+### Recommended Desktop Requirements
+
+```yaml
+CPU: Quad-core 2.5 GHz or better
+RAM: 8 GB
+GPU: Dedicated GPU (NVIDIA GTX 960 / AMD R9 280 or better)
+Storage: 100 MB
+Network: Broadband connection
+```
+
+### VR Requirements
+
+```yaml
+CPU: Intel i5-4590 / AMD Ryzen 5 1500X or greater
+RAM: 8 GB+
+GPU: NVIDIA GTX 1060 / AMD RX 480 or greater
+VR Headset: WebXR-compatible device
+USB: Available ports for headset connection (PC VR)
+```
+
+## Technical Dependencies
+
+### Core Framework
+
+The game uses A-Frame's built-in components:
+
+```html index.html
+<a-entity id="camera" camera look-controls wasd-controls="acceleration: 10" rotation="-25 0 0">
+  <a-cursor id="cursor" raycaster="objects: .clickable" material="color: #ff0000" scale="0.5 0.5 0.5"></a-cursor>
+</a-entity>
+```
+
+**Key A-Frame Components:**
+- `camera`: Camera rig for viewing the scene
+- `look-controls`: Mouse/headset look controls
+- `wasd-controls`: Keyboard movement (desktop)
+- `raycaster`: Interaction detection for clickable objects
+- `sound`: 3D positional audio support
+
+### Asset Loading Requirements
+
+The game preloads assets using A-Frame's asset management system:
+
+```html index.html
+<a-assets>
+  <img id="img1" src="img/img1.jpg">
+  <img id="img2" src="img/img2.jpg">
+  <img id="img3" src="img/img3.jpg">
+  <img id="img4" src="img/img4.jpg">
+  <img id="back" src="img/atras.jpeg">
+  <img id="carpet" src="piso.jpg">
+  <img id="stone" src="lados.jpg">
+  <audio id="click-sound" src="cartas.mp3"></audio>
+  <audio id="background-music" src="fondo.mp3" preload="auto"></audio>
+</a-assets>
+```
+
+<Warning>
+**CORS Requirement:** Assets must be served from an HTTP server, not the file:// protocol. Cross-origin assets require proper CORS headers.
+</Warning>
+
+## Performance Considerations
+
+### Scene Complexity
+
+The game maintains optimal performance through efficient scene design:
+
+```html index.html
+<a-scene fog="type: exponential; color: #0a0000; density: 0.15">
+  <a-light type="ambient" color="#444"></a-light>
+  <a-light id="flicker" type="point" intensity="1" position="0 3 0" color="#f00"
+           animation="property: intensity; from: 0.2; to: 1.2; dur: 150; loop: true; dir: alternate"></a-light>
+</a-scene>
+```
+
+**Performance Features:**
+- Minimal polygon count (8 cards + environment)
+- Optimized lighting (1 ambient + 1 animated point light)
+- Exponential fog to reduce draw distance
+- Efficient raycasting (only targets `.clickable` elements)
+
+### Frame Rate Targets
+
+| Mode | Target FPS | Typical Performance |
+|------|------------|---------------------|
+| Desktop | 60 FPS | ✅ Easy to achieve |
+| VR | 90 FPS | ✅ Optimized for VR |
+| Mobile VR | 60-72 FPS | ⚠️ Device dependent |
+
+## WebXR API Support
+
+### Checking WebXR Availability
+
+To verify WebXR support in your browser, run this in the console:
+
+```javascript
+if (navigator.xr) {
+  navigator.xr.isSessionSupported('immersive-vr').then((supported) => {
+    console.log('WebXR VR supported:', supported);
+  });
+} else {
+  console.log('WebXR not available');
+}
+```
+
+### Enabling WebXR in Browsers
+
+<CodeGroup>
+```text Chrome
+1. Navigate to chrome://flags
+2. Search for "WebXR"
+3. Enable "WebXR Device API"
+4. Restart browser
+```
+
+```text Firefox
+1. Navigate to about:config
+2. Search for "dom.vr.webxr.enabled"
+3. Set to true
+4. Restart browser
+```
+</CodeGroup>
+
+## Network Requirements
+
+### CDN Dependencies
+
+The game requires internet access to load A-Frame:
+
+```html index.html
+<script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
+```
+
+**Size:** ~400 KB (minified)
+
+<Info>
+For offline deployment, download `aframe.min.js` and serve it locally.
+</Info>
+
+### Local Server Setup
+
+The game must be served via HTTP/HTTPS:
+
+<CodeGroup>
+```bash Python
+python -m http.server 8000
+```
+
+```bash Node.js
+npx serve -p 8000
+```
+
+```bash PHP
+php -S localhost:8000
+```
+</CodeGroup>
+
+### Network Access for VR Headsets
+
+To access the game from a standalone VR headset:
+
+1. Connect your computer and VR headset to the same WiFi network
+2. Find your computer's local IP address:
+   ```bash
+   # Windows
+   ipconfig
+   
+   # macOS/Linux
+   ifconfig
+   ```
+3. Start the local server on your computer
+4. In your VR headset's browser, navigate to:
+   ```
+   http://<your-ip-address>:8000
+   ```
+
+<Warning>
+Ensure your firewall allows incoming connections on port 8000.
+</Warning>
+
+## Troubleshooting
+
+### WebGL Not Available
+
+If you see a WebGL error:
+
+1. Update your graphics drivers
+2. Enable hardware acceleration in browser settings
+3. Try a different browser (Chrome/Firefox recommended)
+
+### VR Button Not Appearing
+
+The VR button appears automatically when:
+- WebXR is supported
+- A VR headset is detected
+- The page is served over HTTPS (or localhost)
+
+### Performance Issues
+
+If experiencing low frame rates:
+
+1. Close other browser tabs
+2. Update graphics drivers
+3. Lower browser window resolution
+4. Disable browser extensions
+
+### CORS Errors
+
+If assets fail to load:
+
+```
+Access to image at 'file:///...' from origin 'null' has been blocked by CORS policy
+```
+
+**Solution:** Always use an HTTP server, never open `index.html` directly.
+
+## Browser Feature Detection
+
+The game relies on these browser APIs:
+
+- ✅ **WebGL:** Required for 3D rendering
+- ✅ **Web Audio API:** Required for sound effects
+- ✅ **requestAnimationFrame:** Required for animations
+- ⚠️ **WebXR Device API:** Required for VR mode only
+- ✅ **ES6 JavaScript:** Template literals, arrow functions, spread operator
+
+<Note>
+All features except WebXR are available in modern browsers by default.
+</Note>

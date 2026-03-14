@@ -1,0 +1,866 @@
+---
+title: 'Configuration'
+description: 'Complete reference for all configurable values and parameters in Forsaken Casino VR'
+---
+
+## Overview
+
+This page documents all configurable values, constants, and parameters used throughout Forsaken Casino VR. These values control gameplay mechanics, visual effects, timing, and environmental settings.
+
+---
+
+## Gameplay Configuration
+
+### Timer Settings
+
+<ParamField path="timeLeft" type="number" default="40">
+  Initial time in seconds before the player loses their soul
+  
+  **Location:** index.html:60
+  
+  ```javascript
+  let timeLeft = 40;
+  ```
+  
+  **Behavior:**
+  - Decrements every second during active gameplay
+  - Displayed in the timer text as "VIDA: {timeLeft}s"
+  - Game ends in defeat when reaches 0
+  - Timer starts on first card interaction
+</ParamField>
+
+<ParamField path="timerInterval" type="interval" default="1000">
+  Timer update frequency in milliseconds
+  
+  **Location:** index.html:71-75
+  
+  ```javascript
+  timerInterval = setInterval(() => {
+    timeLeft--;
+    timerText.setAttribute('value', `VIDA: ${timeLeft}s`);
+    if(timeLeft <= 0) die();
+  }, 1000);
+  ```
+  
+  **Configuration:** 1000ms = 1 second per tick
+</ParamField>
+
+---
+
+### Card Configuration
+
+<ParamField path="cardData" type="array" default="['img1', 'img1', 'img2', 'img2', 'img3', 'img3', 'img4', 'img4']">
+  Array of card image IDs that define the game layout
+  
+  **Location:** index.html:65
+  
+  ```javascript
+  const cardData = ['img1', 'img1', 'img2', 'img2', 'img3', 'img3', 'img4', 'img4'];
+  ```
+  
+  **Properties:**
+  - **Length:** 8 cards (4 pairs)
+  - **Pairs:** Each image ID appears exactly twice
+  - **Shuffling:** Randomized on game initialization (index.html:88)
+</ParamField>
+
+<ParamField path="pairsFound" type="number" default="0">
+  Counter tracking successful matches
+  
+  **Location:** index.html:63
+  
+  ```javascript
+  let pairsFound = 0;
+  ```
+  
+  **Victory condition:** Game is won when `pairsFound === 4` (index.html:138)
+</ParamField>
+
+---
+
+### Game State Variables
+
+<ParamField path="gameActive" type="boolean" default="false">
+  Tracks whether the game timer has started
+  
+  **Location:** index.html:62
+  
+  ```javascript
+  let gameActive = false;
+  ```
+  
+  **Transitions:**
+  - `false` → `true`: On first card interaction (index.html:69)
+  - Prevents timer from starting multiple times
+</ParamField>
+
+<ParamField path="lockBoard" type="boolean" default="false">
+  Master lock preventing card interactions during processing
+  
+  **Location:** index.html:64
+  
+  ```javascript
+  let lockBoard = false; // LLAVE MAESTRA PARA EVITAR TRABAS
+  ```
+  
+  **Critical states:**
+  - Locked when 2 cards are flipped (index.html:126)
+  - Released after match/mismatch resolution (index.html:137, 151)
+  - Prevents rapid clicking bugs
+</ParamField>
+
+<ParamField path="flippedCards" type="array" default="[]">
+  Temporary storage for currently flipped cards
+  
+  **Location:** index.html:115
+  
+  ```javascript
+  let flippedCards = [];
+  ```
+  
+  **Behavior:**
+  - Max length: 2 cards
+  - Cleared after each pair evaluation (index.html:136, 150)
+</ParamField>
+
+---
+
+## Visual Configuration
+
+### Fog Settings
+
+<ParamField path="fog.type" type="string" default="exponential">
+  Fog calculation method
+  
+  **Location:** index.html:8
+  
+  ```html
+  <a-scene fog="type: exponential; color: #0a0000; density: 0.15">
+  ```
+  
+  **Options:**
+  - `exponential`: Density increases exponentially with distance
+  - `linear`: (not used) Density increases linearly
+</ParamField>
+
+<ParamField path="fog.color" type="color" default="#0a0000">
+  Fog color in hexadecimal
+  
+  **Value:** `#0a0000` - Very dark red (almost black)
+  
+  **RGB:** R:10, G:0, B:0
+  
+  **Effect:** Creates ominous red-tinted darkness
+</ParamField>
+
+<ParamField path="fog.density" type="number" default="0.15">
+  Fog thickness/opacity multiplier
+  
+  **Value:** `0.15` - Moderately dense fog
+  
+  **Range:** 0 (no fog) to 1 (very dense)
+  
+  **Visibility impact:** Objects become obscured at ~10-15 meters
+</ParamField>
+
+---
+
+### Light Configuration
+
+<AccordionGroup>
+  <Accordion title="Ambient Light">
+    <ParamField path="ambient.type" type="string" default="ambient">
+      Provides base illumination to all objects
+    </ParamField>
+    
+    <ParamField path="ambient.color" type="color" default="#444">
+      **Value:** `#444` - Dim gray
+      
+      **Location:** index.html:32
+      
+      ```html
+      <a-light type="ambient" color="#444"></a-light>
+      ```
+      
+      **RGB:** R:68, G:68, B:68 (about 27% brightness)
+    </ParamField>
+  </Accordion>
+
+  <Accordion title="Point Light (Flickering)">
+    <ParamField path="flicker.type" type="string" default="point">
+      Omnidirectional light source
+    </ParamField>
+    
+    <ParamField path="flicker.intensity" type="number" default="1">
+      Base brightness multiplier
+      
+      **Location:** index.html:33
+    </ParamField>
+    
+    <ParamField path="flicker.position" type="vector3" default="0 3 0">
+      **Position:** 3 meters above the table center
+      
+      **Coordinates:** X=0, Y=3, Z=0
+    </ParamField>
+    
+    <ParamField path="flicker.color" type="color" default="#f00">
+      **Value:** `#f00` - Pure red
+      
+      **RGB:** R:255, G:0, B:0
+    </ParamField>
+    
+    <ParamField path="flicker.animation" type="object">
+      Flickering effect configuration:
+      
+      ```html
+      animation="property: intensity; from: 0.2; to: 1.2; dur: 150; loop: true; dir: alternate"
+      ```
+      
+      **Parameters:**
+      - `property`: `intensity` - Animates brightness
+      - `from`: `0.2` - Minimum (very dim)
+      - `to`: `1.2` - Maximum (slightly brighter than base)
+      - `dur`: `150` - 150 milliseconds per cycle
+      - `loop`: `true` - Continuous
+      - `dir`: `alternate` - Smoothly oscillates
+    </ParamField>
+  </Accordion>
+</AccordionGroup>
+
+---
+
+### Color Configuration
+
+<CardGroup cols={2}>
+  <Card title="Sky Color" icon="cloud">
+    `#000` - Pure black
+    
+    Location: index.html:36
+  </Card>
+  
+  <Card title="Floor Tint" icon="border-all">
+    `#222` - Very dark gray
+    
+    Location: index.html:37
+  </Card>
+  
+  <Card title="Wall Tint" icon="cube">
+    `#333` - Dark gray
+    
+    Location: index.html:38
+  </Card>
+  
+  <Card title="Cursor Color" icon="bullseye">
+    `#ff0000` - Bright red
+    
+    Location: index.html:25
+  </Card>
+</CardGroup>
+
+---
+
+## Animation Timing
+
+### Card Animations
+
+<ParamField path="cardFlip.duration" type="number" default="250">
+  Card rotation animation duration in milliseconds
+  
+  **Location:** index.html:122
+  
+  ```javascript
+  card.setAttribute('animation', 'property: rotation; to: 0 180 0; dur: 250');
+  ```
+  
+  **Rotation:** 0° to 180° over 250ms
+</ParamField>
+
+<ParamField path="cardFlip.textureDelay" type="number" default="125">
+  Delay before changing card texture (mid-flip)
+  
+  **Location:** index.html:123
+  
+  ```javascript
+  setTimeout(() => card.setAttribute('src', '#' + card.dataset.id), 125);
+  ```
+  
+  **Timing:** Exactly halfway through flip animation (125ms of 250ms)
+</ParamField>
+
+<ParamField path="cardDisappear.duration" type="number" default="300">
+  Matched card scale-to-zero animation
+  
+  **Location:** index.html:133-134
+  
+  ```javascript
+  card1.setAttribute('animation', 'property: scale; to: 0 0 0; dur: 300');
+  card2.setAttribute('animation', 'property: scale; to: 0 0 0; dur: 300');
+  ```
+  
+  **Effect:** Cards shrink to nothing over 300ms
+</ParamField>
+
+<ParamField path="cardDisappear.delay" type="number" default="600">
+  Delay before matched cards disappear
+  
+  **Location:** index.html:132
+  
+  ```javascript
+  setTimeout(() => {
+    card1.setAttribute('animation', 'property: scale; to: 0 0 0; dur: 300');
+    // ...
+  }, 600);
+  ```
+  
+  **Purpose:** Allows players to briefly see the matched pair
+</ParamField>
+
+---
+
+### Mismatch Animation Timing
+
+<ParamField path="mismatchFlipBack.delay" type="number" default="800">
+  Delay before mismatched cards flip back
+  
+  **Location:** index.html:142
+  
+  ```javascript
+  setTimeout(() => {
+    card1.setAttribute('animation', 'property: rotation; to: 0 0 0; dur: 250');
+    card2.setAttribute('animation', 'property: rotation; to: 0 0 0; dur: 250');
+    // ...
+  }, 800);
+  ```
+  
+  **Purpose:** Gives players time to memorize card positions
+</ParamField>
+
+<ParamField path="mismatchFlipBack.duration" type="number" default="250">
+  Flip-back rotation duration
+  
+  **Location:** index.html:143-144
+  
+  **Rotation:** 180° back to 0° over 250ms
+</ParamField>
+
+<ParamField path="mismatchTexture.delay" type="number" default="125">
+  Delay before changing texture back (mid-flip)
+  
+  **Location:** index.html:145
+  
+  ```javascript
+  setTimeout(() => {
+    card1.setAttribute('src', '#back');
+    card2.setAttribute('src', '#back');
+    // ...
+  }, 125);
+  ```
+  
+  **Nested timing:** 800ms + 125ms = 925ms total from initial flip
+</ParamField>
+
+---
+
+### Death Animation
+
+<ParamField path="deathOverlay.duration" type="number" default="1000">
+  Red overlay fade-in duration
+  
+  **Location:** index.html:82
+  
+  ```javascript
+  deathOverlay.setAttribute('animation', 'property: material.opacity; to: 1; dur: 1000');
+  ```
+  
+  **Effect:** Opacity 0 → 1 over 1000ms (1 second)
+</ParamField>
+
+<ParamField path="deathReload.delay" type="number" default="3000">
+  Time before page reload after death
+  
+  **Location:** index.html:83
+  
+  ```javascript
+  setTimeout(() => location.reload(), 3000);
+  ```
+  
+  **Duration:** 3000ms (3 seconds) to display "PERDISTE TU ALMA" message
+</ParamField>
+
+---
+
+### Victory Animation
+
+<ParamField path="winReload.delay" type="number" default="4000">
+  Time before page reload after victory
+  
+  **Location:** index.html:161
+  
+  ```javascript
+  setTimeout(() => location.reload(), 4000);
+  ```
+  
+  **Duration:** 4000ms (4 seconds) to display "SALISTE CON VIDA" message
+  
+  **Note:** 1 second longer than death screen for extra celebration
+</ParamField>
+
+---
+
+## Position Configuration
+
+### Camera & Player
+
+<ParamField path="rig.position" type="vector3" default="0 1.6 1.2">
+  Player camera rig position
+  
+  **Location:** index.html:23
+  
+  ```html
+  <a-entity id="rig" position="0 1.6 1.2">
+  ```
+  
+  **Coordinates:**
+  - **X:** 0 (centered)
+  - **Y:** 1.6 (average human eye height in meters)
+  - **Z:** 1.2 (1.2 meters in front of table)
+</ParamField>
+
+<ParamField path="camera.rotation" type="vector3" default="-25 0 0">
+  Camera tilt angle
+  
+  **Location:** index.html:24
+  
+  ```html
+  <a-entity id="camera" camera look-controls wasd-controls="acceleration: 10" rotation="-25 0 0">
+  ```
+  
+  **Rotation:**
+  - **Pitch:** -25° (looking down at table)
+  - **Yaw:** 0°
+  - **Roll:** 0°
+</ParamField>
+
+---
+
+### UI Element Positions
+
+<AccordionGroup>
+  <Accordion title="Timer Text">
+    <ParamField path="timerText.position" type="vector3" default="0 0.5 -1">
+      **Location:** index.html:27
+      
+      ```html
+      <a-text id="timerText" value="VIDA: 40s" color="red" position="0 0.5 -1" scale="0.4 0.4 0.4" align="center"></a-text>
+      ```
+      
+      **Coordinates:**
+      - **X:** 0 (centered)
+      - **Y:** 0.5 (upper portion of view)
+      - **Z:** -1 (1 meter in front of camera)
+    </ParamField>
+    
+    <ParamField path="timerText.scale" type="vector3" default="0.4 0.4 0.4">
+      Text size multiplier (40% of base size)
+    </ParamField>
+  </Accordion>
+
+  <Accordion title="Death Overlay">
+    <ParamField path="deathOverlay.position" type="vector3" default="0 0 -0.05">
+      **Location:** index.html:28
+      
+      ```html
+      <a-plane id="deathOverlay" position="0 0 -0.05" width="2" height="2" color="#300" material="opacity: 0; transparent: true"></a-plane>
+      ```
+      
+      **Coordinates:**
+      - **X:** 0 (centered)
+      - **Y:** 0 (eye level)
+      - **Z:** -0.05 (5cm in front of camera, very close)
+    </ParamField>
+    
+    <ParamField path="deathOverlay.size" type="object">
+      **Width:** 2 meters
+      
+      **Height:** 2 meters
+      
+      Fully covers player's field of view
+    </ParamField>
+  </Accordion>
+
+  <Accordion title="Status Text">
+    <ParamField path="statusText.position" type="vector3" default="0 2 -3">
+      **Location:** index.html:51
+      
+      ```html
+      <a-text id="statusText" value="" color="red" position="0 2 -3" scale="2 2 2" align="center"></a-text>
+      ```
+      
+      **Coordinates:**
+      - **X:** 0 (centered)
+      - **Y:** 2 (high up, dramatic position)
+      - **Z:** -3 (3 meters ahead, in the distance)
+    </ParamField>
+    
+    <ParamField path="statusText.scale" type="vector3" default="2 2 2">
+      Large text (200% of base size) for dramatic effect
+    </ParamField>
+  </Accordion>
+</AccordionGroup>
+
+---
+
+### Table Configuration
+
+<ParamField path="table.position" type="vector3" default="0 0 0">
+  Table entity centered at world origin
+  
+  **Location:** index.html:43
+</ParamField>
+
+<ParamField path="tableLeg" type="object">
+  **Position:** `0 0.4 0` (40cm high center point)
+  
+  **Radius:** `0.05` (5cm)
+  
+  **Height:** `0.8` (80cm tall)
+  
+  **Location:** index.html:44
+</ParamField>
+
+<ParamField path="tableSurface" type="object">
+  **Position:** `0 0.8 0` (80cm above ground)
+  
+  **Radius:** `1` (1 meter)
+  
+  **Height:** `0.08` (8cm thick)
+  
+  **Location:** index.html:45
+</ParamField>
+
+<ParamField path="tableFelt" type="object">
+  **Position:** `0 0.81 0` (1cm above surface)
+  
+  **Radius:** `0.95` (95cm, slightly smaller)
+  
+  **Height:** `0.04` (4cm thick)
+  
+  **Location:** index.html:46
+</ParamField>
+
+---
+
+### Card Grid Configuration
+
+<ParamField path="board.position" type="vector3" default="-0.3 0.85 0.2">
+  Board container position
+  
+  **Location:** index.html:49
+  
+  **Coordinates:**
+  - **X:** -0.3 (slightly left of center)
+  - **Y:** 0.85 (just above table surface at 0.8)
+  - **Z:** 0.2 (slightly forward)
+</ParamField>
+
+<ParamField path="board.rotation" type="vector3" default="-90 0 0">
+  Rotates board to lie flat on table
+  
+  **Location:** index.html:49
+</ParamField>
+
+<ParamField path="board.scale" type="vector3" default="0.5 0.5 0.5">
+  Scales entire card grid to 50%
+  
+  **Location:** index.html:49
+</ParamField>
+
+<ParamField path="card.spacing.x" type="number" default="0.4">
+  Horizontal spacing between cards
+  
+  **Location:** index.html:90
+  
+  ```javascript
+  const x = (index % 4) * 0.4;
+  ```
+  
+  **Layout:** 4 columns with 0.4m spacing
+</ParamField>
+
+<ParamField path="card.spacing.y" type="number" default="-0.6">
+  Vertical spacing between card rows
+  
+  **Location:** index.html:91
+  
+  ```javascript
+  const y = Math.floor(index / 4) * -0.6;
+  ```
+  
+  **Layout:** 2 rows with 0.6m spacing (negative for layout direction)
+</ParamField>
+
+<ParamField path="card.dimensions" type="object">
+  Individual card size
+  
+  **Location:** index.html:95-97
+  
+  ```javascript
+  card.setAttribute('width', '0.35');
+  card.setAttribute('height', '0.5');
+  card.setAttribute('depth', '0.01');
+  ```
+  
+  **Values:**
+  - **Width:** 0.35 meters (35cm)
+  - **Height:** 0.5 meters (50cm)
+  - **Depth:** 0.01 meters (1cm, very thin)
+</ParamField>
+
+---
+
+## Audio Configuration
+
+<ParamField path="backgroundMusic.volume" type="number" default="0.3">
+  Background music volume level
+  
+  **Location:** index.html:21
+  
+  ```html
+  <a-entity id="bgMusic" sound="src: #background-music; loop: true; volume: 0.3"></a-entity>
+  ```
+  
+  **Range:** 0.0 (silent) to 1.0 (full volume)
+  
+  **Value:** 0.3 (30% volume to avoid overwhelming gameplay)
+</ParamField>
+
+<ParamField path="backgroundMusic.loop" type="boolean" default="true">
+  Continuous playback setting
+  
+  **Effect:** Music repeats indefinitely once started
+</ParamField>
+
+<ParamField path="clickSound.playback" type="string" default="new instance per click">
+  Creates a new Audio object for each card flip
+  
+  **Location:** index.html:108
+  
+  ```javascript
+  new Audio(document.querySelector('#click-sound').src).play();
+  ```
+  
+  **Benefit:** Allows overlapping sounds without cutting off previous plays
+</ParamField>
+
+---
+
+## Control Configuration
+
+<ParamField path="wasd-controls.acceleration" type="number" default="10">
+  Movement speed multiplier
+  
+  **Location:** index.html:24
+  
+  ```html
+  <a-entity id="camera" camera look-controls wasd-controls="acceleration: 10" rotation="-25 0 0">
+  ```
+  
+  **Effect:** Fast movement speed for quick repositioning
+</ParamField>
+
+<ParamField path="cursor.raycaster.objects" type="string" default=".clickable">
+  CSS selector for interactive objects
+  
+  **Location:** index.html:25
+  
+  ```html
+  <a-cursor id="cursor" raycaster="objects: .clickable" material="color: #ff0000" scale="0.5 0.5 0.5"></a-cursor>
+  ```
+  
+  **Effect:** Only detects entities with class="clickable"
+</ParamField>
+
+<ParamField path="cursor.scale" type="vector3" default="0.5 0.5 0.5">
+  Cursor size (50% of default)
+  
+  **Location:** index.html:25
+</ParamField>
+
+---
+
+## Environment Configuration
+
+<ParamField path="floor.size" type="object">
+  Floor plane dimensions
+  
+  **Location:** index.html:37
+  
+  ```html
+  <a-plane src="#carpet" rotation="-90 0 0" width="30" height="30" color="#222"></a-plane>
+  ```
+  
+  **Values:**
+  - **Width:** 30 meters
+  - **Height:** 30 meters (becomes depth when rotated)
+  
+  **Total area:** 900 square meters
+</ParamField>
+
+<ParamField path="backWall.dimensions" type="object">
+  Back wall size
+  
+  **Location:** index.html:38
+  
+  ```html
+  <a-box src="#stone" position="0 4 -6" width="20" height="10" depth="0.5" color="#333"></a-box>
+  ```
+  
+  **Values:**
+  - **Width:** 20 meters
+  - **Height:** 10 meters
+  - **Depth:** 0.5 meters
+  - **Position:** 6 meters back, 4 meters up
+</ParamField>
+
+---
+
+## Game Messages
+
+<ParamField path="timerText.initialValue" type="string" default="VIDA: 40s">
+  Initial timer display text
+  
+  **Location:** index.html:27
+  
+  **Translation:** "LIFE: 40s"
+</ParamField>
+
+<ParamField path="timerText.updateFormat" type="string" default="VIDA: {timeLeft}s">
+  Dynamic timer update format
+  
+  **Location:** index.html:73
+  
+  ```javascript
+  timerText.setAttribute('value', `VIDA: ${timeLeft}s`);
+  ```
+</ParamField>
+
+<ParamField path="statusText.death" type="string" default="PERDISTE TU ALMA">
+  Death message
+  
+  **Location:** index.html:81
+  
+  ```javascript
+  statusText.setAttribute('value', 'PERDISTE TU ALMA');
+  ```
+  
+  **Translation:** "YOU LOST YOUR SOUL"
+</ParamField>
+
+<ParamField path="statusText.victory" type="string" default="SALISTE CON VIDA">
+  Victory message
+  
+  **Location:** index.html:160
+  
+  ```javascript
+  statusText.setAttribute('value', 'SALISTE CON VIDA');
+  ```
+  
+  **Translation:** "YOU ESCAPED ALIVE"
+</ParamField>
+
+---
+
+## Customization Guide
+
+<AccordionGroup>
+  <Accordion title="Making the Game Easier">
+    **Increase time limit:**
+    ```javascript
+    let timeLeft = 60; // Instead of 40
+    ```
+    
+    **Slow down animations:**
+    ```javascript
+    // Longer mismatch delay for easier memorization
+    setTimeout(() => { /* flip back */ }, 1500); // Instead of 800
+    ```
+  </Accordion>
+
+  <Accordion title="Making the Game Harder">
+    **Decrease time limit:**
+    ```javascript
+    let timeLeft = 30; // Instead of 40
+    ```
+    
+    **Add more cards:**
+    ```javascript
+    const cardData = ['img1', 'img1', 'img2', 'img2', 'img3', 'img3', 'img4', 'img4', 'img5', 'img5'];
+    ```
+    
+    **Faster animations:**
+    ```javascript
+    setTimeout(() => { /* flip back */ }, 400); // Instead of 800
+    ```
+  </Accordion>
+
+  <Accordion title="Visual Customization">
+    **Change fog color (blue instead of red):**
+    ```html
+    <a-scene fog="type: exponential; color: #000a0a; density: 0.15">
+    ```
+    
+    **Brighter lighting:**
+    ```html
+    <a-light type="ambient" color="#888"></a-light>
+    ```
+    
+    **Different cursor color:**
+    ```html
+    <a-cursor material="color: #00ff00"></a-cursor>
+    ```
+  </Accordion>
+
+  <Accordion title="Gameplay Tweaks">
+    **Faster movement:**
+    ```html
+    <a-entity wasd-controls="acceleration: 20">
+    ```
+    
+    **Larger cards:**
+    ```javascript
+    card.setAttribute('width', '0.5');  // Instead of 0.35
+    card.setAttribute('height', '0.7'); // Instead of 0.5
+    ```
+    
+    **Louder background music:**
+    ```html
+    <a-entity sound="volume: 0.5"></a-entity>
+    ```
+  </Accordion>
+</AccordionGroup>
+
+---
+
+## Configuration Summary
+
+<CardGroup cols={3}>
+  <Card title="Gameplay" icon="gamepad">
+    - 40 second time limit
+    - 8 cards (4 pairs)
+    - 250ms card flips
+    - 800ms mismatch delay
+  </Card>
+  
+  <Card title="Visual" icon="eye">
+    - Red exponential fog (0.15 density)
+    - Black sky
+    - Red flickering light (150ms cycles)
+    - Dark ambient lighting (#444)
+  </Card>
+  
+  <Card title="Audio" icon="volume">
+    - 30% background music volume
+    - Looping background track
+    - Card flip sound effects
+  </Card>
+</CardGroup>

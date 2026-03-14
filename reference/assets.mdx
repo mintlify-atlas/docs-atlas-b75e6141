@@ -1,0 +1,442 @@
+---
+title: 'Assets'
+description: 'Complete catalog of all visual and audio assets used in Forsaken Casino VR'
+---
+
+## Overview
+
+All assets are preloaded in the `<a-assets>` container to ensure smooth performance and prevent stuttering during gameplay. Assets are referenced throughout the scene using ID selectors (e.g., `#img1`, `#carpet`).
+
+```html index.html:9-19
+<a-assets>
+  <img id="img1" src="img/img1.jpg">
+  <img id="img2" src="img/img2.jpg">
+  <img id="img3" src="img/img3.jpg">
+  <img id="img4" src="img/img4.jpg">
+  <img id="back" src="img/atras.jpeg">
+  <img id="carpet" src="piso.jpg">
+  <img id="stone" src="lados.jpg">
+  <audio id="click-sound" src="cartas.mp3"></audio>
+  <audio id="background-music" src="fondo.mp3" preload="auto"></audio>
+</a-assets>
+```
+
+---
+
+## Image Assets
+
+### Card Face Images
+
+The four unique card face images that players must match in pairs.
+
+<AccordionGroup>
+  <Accordion title="img1 - First Card Face">
+    <ParamField path="id" type="string">
+      `img1`
+    </ParamField>
+    
+    <ParamField path="src" type="string">
+      `img/img1.jpg`
+    </ParamField>
+    
+    <ParamField path="usage" type="string">
+      Card pair 1 (appears twice in the game)
+    </ParamField>
+    
+    **Referenced in:**
+    - Card data array index.html:65
+    - Dynamically applied to matched cards
+    
+    ```javascript
+    const cardData = ['img1', 'img1', 'img2', 'img2', 'img3', 'img3', 'img4', 'img4'];
+    ```
+  </Accordion>
+
+  <Accordion title="img2 - Second Card Face">
+    <ParamField path="id" type="string">
+      `img2`
+    </ParamField>
+    
+    <ParamField path="src" type="string">
+      `img/img2.jpg`
+    </ParamField>
+    
+    <ParamField path="usage" type="string">
+      Card pair 2 (appears twice in the game)
+    </ParamField>
+  </Accordion>
+
+  <Accordion title="img3 - Third Card Face">
+    <ParamField path="id" type="string">
+      `img3`
+    </ParamField>
+    
+    <ParamField path="src" type="string">
+      `img/img3.jpg`
+    </ParamField>
+    
+    <ParamField path="usage" type="string">
+      Card pair 3 (appears twice in the game)
+    </ParamField>
+  </Accordion>
+
+  <Accordion title="img4 - Fourth Card Face">
+    <ParamField path="id" type="string">
+      `img4`
+    </ParamField>
+    
+    <ParamField path="src" type="string">
+      `img/img4.jpg`
+    </ParamField>
+    
+    <ParamField path="usage" type="string">
+      Card pair 4 (appears twice in the game)
+    </ParamField>
+  </Accordion>
+</AccordionGroup>
+
+<Note>
+  All four card face images must be visually distinct to ensure the memory game is playable. Each image appears exactly twice in the 8-card layout.
+</Note>
+
+---
+
+### Card Back Image
+
+<ParamField path="id" type="string">
+  `back`
+</ParamField>
+
+<ParamField path="src" type="string">
+  `img/atras.jpeg`
+</ParamField>
+
+<ParamField path="format" type="string">
+  JPEG image
+</ParamField>
+
+**Usage:**
+The default texture for all cards before they are flipped. Also used when cards are flipped back after a failed match.
+
+```javascript index.html:98
+card.setAttribute('src', '#back');
+```
+
+```javascript index.html:146-147
+card1.setAttribute('src', '#back');
+card2.setAttribute('src', '#back');
+```
+
+<Info>
+  The card back image should have a distinctive, thematic design that fits the horror casino aesthetic.
+</Info>
+
+---
+
+### Environmental Textures
+
+<AccordionGroup>
+  <Accordion title="carpet - Floor Texture">
+    <ParamField path="id" type="string">
+      `carpet`
+    </ParamField>
+    
+    <ParamField path="src" type="string">
+      `piso.jpg` ("piso" means "floor" in Spanish)
+    </ParamField>
+    
+    <ParamField path="applied to" type="string">
+      30x30 meter floor plane
+    </ParamField>
+    
+    **Implementation:**
+    ```html index.html:37
+    <a-plane src="#carpet" rotation="-90 0 0" width="30" height="30" color="#222"></a-plane>
+    ```
+    
+    The floor uses a dark tint (`#222`) to enhance the horror atmosphere while maintaining texture visibility.
+  </Accordion>
+
+  <Accordion title="stone - Wall Texture">
+    <ParamField path="id" type="string">
+      `stone`
+    </ParamField>
+    
+    <ParamField path="src" type="string">
+      `lados.jpg` ("lados" means "sides" in Spanish)
+    </ParamField>
+    
+    <ParamField path="applied to" type="string">
+      Back wall (20m wide × 10m tall × 0.5m deep)
+    </ParamField>
+    
+    **Implementation:**
+    ```html index.html:38
+    <a-box src="#stone" position="0 4 -6" width="20" height="10" depth="0.5" color="#333"></a-box>
+    ```
+    
+    The stone texture creates a dungeon-like atmosphere, tinted with `#333` for a weathered appearance.
+  </Accordion>
+</AccordionGroup>
+
+---
+
+## Audio Assets
+
+### Sound Effects
+
+<ParamField path="id" type="string">
+  `click-sound`
+</ParamField>
+
+<ParamField path="src" type="string">
+  `cartas.mp3` ("cartas" means "cards" in Spanish)
+</ParamField>
+
+<ParamField path="format" type="string">
+  MP3 audio file
+</ParamField>
+
+<ParamField path="trigger" type="string">
+  Plays when a card is flipped (on `mouseenter` event)
+</ParamField>
+
+**Implementation:**
+```javascript index.html:108
+new Audio(document.querySelector('#click-sound').src).play();
+```
+
+<Note>
+  A new Audio instance is created each time to allow overlapping sounds if multiple cards are interacted with in rapid succession.
+</Note>
+
+---
+
+### Background Music
+
+<ParamField path="id" type="string">
+  `background-music`
+</ParamField>
+
+<ParamField path="src" type="string">
+  `fondo.mp3` ("fondo" means "background" in Spanish)
+</ParamField>
+
+<ParamField path="format" type="string">
+  MP3 audio file
+</ParamField>
+
+<ParamField path="preload" type="string">
+  `auto` - Browser preloads the entire file
+</ParamField>
+
+**Configuration:**
+```html index.html:21
+<a-entity id="bgMusic" sound="src: #background-music; loop: true; volume: 0.3"></a-entity>
+```
+
+<ParamField path="loop" type="boolean">
+  `true` - Continuous playback throughout the game
+</ParamField>
+
+<ParamField path="volume" type="number">
+  `0.3` - Set to 30% to avoid overwhelming the player
+</ParamField>
+
+<ParamField path="playback trigger" type="string">
+  Starts when the player interacts with their first card
+</ParamField>
+
+**Playback Control:**
+```javascript index.html:70
+document.querySelector('#bgMusic').components.sound.playSound();
+```
+
+<Info>
+  The music only starts when the game timer begins (first card interaction) to create a dramatic transition from silence to gameplay.
+</Info>
+
+---
+
+## Asset Organization
+
+### Directory Structure
+
+```
+/
+├── img/
+│   ├── img1.jpg       # Card face 1
+│   ├── img2.jpg       # Card face 2
+│   ├── img3.jpg       # Card face 3
+│   ├── img4.jpg       # Card face 4
+│   └── atras.jpeg     # Card back
+├── piso.jpg           # Floor carpet texture
+├── lados.jpg          # Wall stone texture
+├── cartas.mp3         # Card flip sound effect
+└── fondo.mp3          # Background music
+```
+
+<Note>
+  Card images are organized in a separate `img/` subdirectory, while environmental textures and audio files are in the root directory.
+</Note>
+
+---
+
+## Asset Loading
+
+### Preloading Behavior
+
+A-Frame's `<a-assets>` system ensures all assets are loaded before the scene renders:
+
+1. **Automatic blocking**: Scene waits for all assets to load
+2. **Timeout**: Default 3-second timeout (can be customized)
+3. **Progress events**: Can be monitored via `loaded` event
+
+<Info>
+  The `preload="auto"` attribute on background music ensures it's fully loaded before gameplay begins, preventing audio stuttering.
+</Info>
+
+### Asset References
+
+Assets are referenced using the `#` ID selector:
+
+<CardGroup cols={2}>
+  <Card title="Image Assets" icon="image">
+    ```html
+    <a-plane src="#carpet">
+    <a-box src="#stone">
+    ```
+  </Card>
+  
+  <Card title="Audio Assets" icon="volume">
+    ```html
+    <a-entity sound="src: #background-music">
+    ```
+  </Card>
+</CardGroup>
+
+---
+
+## Asset Usage Map
+
+### Where Each Asset is Used
+
+<AccordionGroup>
+  <Accordion title="img1, img2, img3, img4">
+    **Usage locations:**
+    - Card data array (index.html:65)
+    - Dynamically applied to flipped cards (index.html:123)
+    - Displayed when cards match
+    
+    **Visibility:** Only visible when cards are face-up
+  </Accordion>
+
+  <Accordion title="back">
+    **Usage locations:**
+    - Initial card state (index.html:98)
+    - Card flip-back after mismatch (index.html:146-147)
+    
+    **Visibility:** Visible on all unmatched cards
+  </Accordion>
+
+  <Accordion title="carpet">
+    **Usage locations:**
+    - Floor plane (index.html:37)
+    
+    **Visibility:** Always visible as the ground surface
+  </Accordion>
+
+  <Accordion title="stone">
+    **Usage locations:**
+    - Back wall box (index.html:38)
+    
+    **Visibility:** Always visible in the background
+  </Accordion>
+
+  <Accordion title="click-sound">
+    **Usage locations:**
+    - Card mouseenter event (index.html:108)
+    
+    **Trigger:** Every card interaction
+  </Accordion>
+
+  <Accordion title="background-music">
+    **Usage locations:**
+    - Background music entity (index.html:21)
+    - Started via JavaScript (index.html:70)
+    
+    **Trigger:** First card interaction, loops continuously
+  </Accordion>
+</AccordionGroup>
+
+---
+
+## Performance Considerations
+
+<CardGroup cols={2}>
+  <Card title="Image Optimization" icon="image">
+    Card images should be:
+    - Compressed JPEGs
+    - Reasonable resolution (512x512 or 1024x1024)
+    - Power-of-2 dimensions for WebGL efficiency
+  </Card>
+  
+  <Card title="Audio Optimization" icon="waveform">
+    Audio files should be:
+    - Compressed MP3 format
+    - Appropriate bitrate (128-192 kbps)
+    - Loopable (seamless for background music)
+  </Card>
+  
+  <Card title="Texture Tiling" icon="grid">
+    Environmental textures (carpet, stone) should:
+    - Tile seamlessly
+    - Be tileable patterns
+    - Use efficient compression
+  </Card>
+  
+  <Card title="Asset Count" icon="list">
+    Total assets:
+    - 7 images
+    - 2 audio files
+    - All preloaded before gameplay
+  </Card>
+</CardGroup>
+
+---
+
+## Asset Modifications
+
+### Dynamic Asset Swapping
+
+Card textures are swapped dynamically during gameplay:
+
+```javascript
+// Flip to card face
+setTimeout(() => card.setAttribute('src', '#' + card.dataset.id), 125);
+
+// Flip back to card back
+card.setAttribute('src', '#back');
+```
+
+<Note>
+  The 125ms delay when revealing cards creates a smooth half-flip transition before the texture changes.
+</Note>
+
+---
+
+## Asset Naming Convention
+
+### Spanish Names
+
+Many assets use Spanish filenames, reflecting the game's linguistic theming:
+
+- `atras.jpeg` = "back" (card back)
+- `cartas.mp3` = "cards" (card sound)
+- `fondo.mp3` = "background" (background music)
+- `piso.jpg` = "floor" (floor texture)
+- `lados.jpg` = "sides" (wall texture)
+
+<Info>
+  In-game text is also in Spanish ("VIDA", "PERDISTE TU ALMA", "SALISTE CON VIDA"), creating a cohesive linguistic experience.
+</Info>

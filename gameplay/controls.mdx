@@ -1,0 +1,369 @@
+---
+title: Controls
+description: Complete guide to VR controls, gaze-based cursor, WASD movement, and look controls in Forsaken Casino VR
+---
+
+## Control Overview
+
+Forsaken Casino uses a **gaze-based interaction system** combined with standard first-person controls. The game is designed for both VR headsets and desktop browsers, using A-Frame's built-in control systems.
+
+<CardGroup cols={2}>
+  <Card title="Gaze Cursor" icon="crosshairs">
+    Hover over cards to flip them
+  </Card>
+  
+  <Card title="Look Controls" icon="rotate">
+    Mouse or head tracking to look around
+  </Card>
+  
+  <Card title="WASD Movement" icon="gamepad">
+    Keyboard keys to move around the table
+  </Card>
+  
+  <Card title="VR Compatible" icon="vr-cardboard">
+    Full WebVR/WebXR support
+  </Card>
+</CardGroup>
+
+## Gaze-Based Cursor System
+
+The primary interaction method uses a **raycaster cursor** that detects when you look at interactive objects.
+
+### Cursor Configuration
+
+```html
+<a-cursor id="cursor" 
+          raycaster="objects: .clickable" 
+          material="color: #ff0000" 
+          scale="0.5 0.5 0.5">
+</a-cursor>
+```
+
+<Steps>
+  <Step title="Visual Appearance">
+    The cursor appears as a **red reticle** in the center of your vision.
+    
+    - **Color**: Bright red (`#ff0000`) for high visibility against dark environment
+    - **Scale**: 0.5× default size for precision targeting
+    - **Shape**: Ring/torus (A-Frame default cursor geometry)
+  </Step>
+
+  <Step title="Raycaster Target">
+    The cursor only interacts with elements that have the `clickable` class:
+    
+    ```javascript
+    card.setAttribute('class', 'clickable');
+    ```
+    
+    This prevents accidental interactions with the environment (table, walls, floor).
+  </Step>
+
+  <Step title="Parent Entity">
+    The cursor is a child of the camera entity, so it always stays centered in your field of view:
+    
+    ```html
+    <a-entity id="camera" camera look-controls wasd-controls="acceleration: 10">
+      <a-cursor id="cursor" ... ></a-cursor>
+    </a-entity>
+    ```
+  </Step>
+</Steps>
+
+### Hover Interaction
+
+Cards use the `mouseenter` event for gaze interaction:
+
+```javascript
+card.addEventListener('mouseenter', function() {
+    if (lockBoard || this.dataset.flipped === "true" || timeLeft <= 0) return;
+    
+    startTimer();
+    new Audio(document.querySelector('#click-sound').src).play();
+    flip(this);
+});
+```
+
+<Info>
+  In A-Frame, `mouseenter` is triggered when the raycaster cursor intersects with an object. No clicking required—just **look at a card to flip it**.
+</Info>
+
+<Warning>
+  This is a **hover-based** system, not click-based. Be careful where you look! The moment your cursor touches a valid card, it will flip automatically.
+</Warning>
+
+## Look Controls
+
+The camera uses A-Frame's `look-controls` component for head/mouse rotation.
+
+### Configuration
+
+```html
+<a-entity id="camera" camera look-controls wasd-controls="acceleration: 10" rotation="-25 0 0">
+```
+
+### Desktop Controls
+
+<Accordion title="Mouse Look">
+  **Click and drag** to rotate the camera:
+  - Horizontal mouse movement → Yaw (left/right rotation)
+  - Vertical mouse movement → Pitch (up/down rotation)
+  
+  You can also use the **pointer lock** feature by clicking anywhere in the scene to capture the mouse.
+</Accordion>
+
+<Accordion title="Touch Look (Mobile/Tablet)">
+  **Touch and drag** on the screen to rotate the camera.
+</Accordion>
+
+### VR Controls
+
+<Accordion title="Head Tracking">
+  When using a VR headset (Oculus, Vive, etc.), the camera automatically follows your head orientation using the device's IMU sensors.
+  
+  <Tip>
+    The gaze cursor moves with your head, allowing you to flip cards by simply looking at them—perfect for VR immersion.
+  </Tip>
+</Accordion>
+
+### Initial Camera Angle
+
+The camera starts tilted downward for optimal table viewing:
+
+```html
+rotation="-25 0 0"
+```
+
+- **Pitch**: -25° (looking down at the table)
+- **Yaw**: 0° (facing forward)
+- **Roll**: 0° (no tilt)
+
+<Info>
+  This initial angle ensures the card table is immediately visible without needing to adjust your view.
+</Info>
+
+## WASD Movement Controls
+
+The camera rig includes keyboard-based movement for navigation.
+
+### Configuration
+
+```html
+<a-entity id="rig" position="0 1.6 1.2">
+  <a-entity id="camera" camera look-controls wasd-controls="acceleration: 10">
+```
+
+### Movement Keys
+
+<CardGroup cols={2}>
+  <Card title="W" icon="arrow-up">
+    Move **forward** in the direction you're facing
+  </Card>
+  
+  <Card title="S" icon="arrow-down">
+    Move **backward** opposite to your facing direction
+  </Card>
+  
+  <Card title="A" icon="arrow-left">
+    **Strafe left** perpendicular to facing direction
+  </Card>
+  
+  <Card title="D" icon="arrow-right">
+    **Strafe right** perpendicular to facing direction
+  </Card>
+</CardGroup>
+
+### Movement Parameters
+
+```javascript
+wasd-controls="acceleration: 10"
+```
+
+<Info>
+  **Acceleration**: Set to 10 units/s² for responsive movement. Higher than default for quicker repositioning around the table.
+</Info>
+
+Default WASD controls also include:
+- **Max speed**: ~4 units/second (A-Frame default)
+- **Easing**: Gradual acceleration and deceleration
+- **Collision**: Disabled by default (can move through objects)
+
+### Arrow Keys Alternative
+
+<Tip>
+  A-Frame's `wasd-controls` also supports **arrow keys** as an alternative to WASD for movement.
+</Tip>
+
+## Camera Rig Positioning
+
+The camera is mounted on a rig entity that controls the player's base position:
+
+```html
+<a-entity id="rig" position="0 1.6 1.2">
+```
+
+### Starting Position
+
+- **X**: `0` (centered horizontally)
+- **Y**: `1.6` (eye level, standard VR height)
+- **Z**: `1.2` (positioned back from table)
+
+<Steps>
+  <Step title="Height (Y: 1.6)">
+    Places the camera at approximately 1.6 meters (5'3"), simulating standing eye level. This is the standard VR height for seated or standing experiences.
+  </Step>
+
+  <Step title="Distance (Z: 1.2)">
+    Positions the player 1.2 meters back from the table center (Z=0), providing an optimal viewing distance for the 4×2 card grid.
+  </Step>
+
+  <Step title="Centering (X: 0)">
+    Aligns the player directly in front of the table's center for symmetrical card viewing.
+  </Step>
+</Steps>
+
+### Table Position Reference
+
+The game board is positioned relative to the rig:
+
+```html
+<a-entity id="board" position="-0.3 0.85 0.2" rotation="-90 0 0" scale="0.5 0.5 0.5"></a-entity>
+```
+
+With the rig at (0, 1.6, 1.2) and the board at (-0.3, 0.85, 0.2):
+- **Viewing angle**: Looking down from ~0.75 meters above the table
+- **Horizontal offset**: Slightly left (-0.3) for natural positioning
+- **Distance**: About 1 meter forward from player position
+
+## HUD Elements
+
+Several UI elements are attached to the camera for always-visible feedback.
+
+### Timer Display
+
+```html
+<a-text id="timerText" 
+        value="VIDA: 40s" 
+        color="red" 
+        position="0 0.5 -1" 
+        scale="0.4 0.4 0.4" 
+        align="center">
+</a-text>
+```
+
+<Info>
+  **Position**: 0.5 units **above** camera center, 1 unit **forward**  
+  **Result**: Appears in the upper field of view, always visible without obstructing card view
+</Info>
+
+### Death Overlay
+
+```html
+<a-plane id="deathOverlay" 
+         position="0 0 -0.05" 
+         width="2" height="2" 
+         color="#300" 
+         material="opacity: 0; transparent: true">
+</a-plane>
+```
+
+<Accordion title="Overlay Functionality">
+  Positioned directly in front of the camera (0.05 units forward):
+  - **Initial state**: Fully transparent (opacity: 0)
+  - **On death**: Fades to opaque dark red over 1 second
+  - **Size**: 2×2 units fills entire view
+  - **Color**: Dark crimson (`#300`) for ominous effect
+  
+  ```javascript
+  deathOverlay.setAttribute('animation', 
+    'property: material.opacity; to: 1; dur: 1000');
+  ```
+</Accordion>
+
+### Status Text
+
+Large floating text for win/lose messages:
+
+```html
+<a-text id="statusText" 
+        value="" 
+        color="red" 
+        position="0 2 -3" 
+        scale="2 2 2" 
+        align="center">
+</a-text>
+```
+
+<Info>
+  **Position**: 2 units **above** ground, 3 units **forward** (world-space, not camera-relative)  
+  **Result**: Appears as large text floating above the table when win/lose conditions trigger
+</Info>
+
+## VR Headset Support
+
+The game automatically adapts to VR headsets through A-Frame's WebXR implementation.
+
+### Entering VR Mode
+
+<Steps>
+  <Step title="VR Button">
+    A-Frame automatically adds a "Enter VR" button in the bottom-right corner when a VR device is detected.
+  </Step>
+
+  <Step title="Device Detection">
+    Supports WebXR-compatible devices:
+    - Meta Quest 1/2/3/Pro
+    - HTC Vive
+    - Valve Index
+    - Windows Mixed Reality
+    - Any WebXR-compatible browser
+  </Step>
+
+  <Step title="Gaze Control">
+    In VR mode, the red cursor follows your head orientation, allowing you to flip cards by looking at them naturally.
+  </Step>
+</Steps>
+
+### Movement in VR
+
+<Warning>
+  WASD controls may not work in VR mode depending on the device. Most VR experiences use room-scale movement or controller-based locomotion, but this game is designed for **stationary gameplay** at a table.
+</Warning>
+
+<Tip>
+  For the best VR experience, position yourself at a comfortable standing or seated distance from the table before entering VR mode.
+</Tip>
+
+## Control Limitations
+
+<Accordion title="No Click Requirement">
+  Unlike traditional games, you **cannot** click to interact. The gaze cursor automatically triggers card flips on hover (`mouseenter` event). Be mindful of cursor placement.
+</Accordion>
+
+<Accordion title="No Jump or Crouch">
+  The WASD controls only allow horizontal movement (X/Z plane). Vertical position (Y) is fixed at 1.6 meters.
+</Accordion>
+
+<Accordion title="No Collision Detection">
+  You can move through the table and other objects. The game assumes you'll stay in the intended play area.
+</Accordion>
+
+<Accordion title="No Controller Input">
+  VR controllers are not configured for input. All interaction is gaze-based, making it universally compatible with any VR headset (including those without hand controllers).
+</Accordion>
+
+## Quick Reference
+
+| Control | Action | Device |
+|---------|--------|--------|
+| **Cursor Hover** | Flip card | Desktop/VR |
+| **Mouse Drag** | Look around | Desktop |
+| **Head Movement** | Look around | VR Headset |
+| **W/↑** | Move forward | Keyboard |
+| **S/↓** | Move backward | Keyboard |
+| **A/←** | Strafe left | Keyboard |
+| **D/→** | Strafe right | Keyboard |
+| **Touch Drag** | Look around | Mobile/Tablet |
+
+<Tip>
+  For the intended experience, position yourself comfortably in front of the table and use only gaze controls to flip cards. Movement controls are optional for repositioning.
+</Tip>
