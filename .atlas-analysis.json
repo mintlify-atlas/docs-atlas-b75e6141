@@ -1,0 +1,62 @@
+{
+  "projectType": "frontend",
+  "projectName": "Forsaken Casino",
+  "projectDescription": "A horror-themed VR memory card matching game built with A-Frame featuring immersive 3D graphics and timed gameplay",
+  "theme": "aspen",
+  "primaryColor": "#ff0000",
+  "lightColor": "#ff4444",
+  "darkColor": "#8b0000",
+  "navigation": {
+    "groups": [
+      {
+        "group": "Get Started",
+        "pages": [
+          "introduction",
+          "quickstart",
+          "requirements"
+        ]
+      },
+      {
+        "group": "Gameplay",
+        "pages": [
+          "gameplay/how-to-play",
+          "gameplay/game-mechanics",
+          "gameplay/controls"
+        ]
+      },
+      {
+        "group": "Development",
+        "pages": [
+          "development/architecture",
+          "development/game-logic",
+          "development/customization"
+        ]
+      },
+      {
+        "group": "Reference",
+        "pages": [
+          "reference/aframe-components",
+          "reference/assets",
+          "reference/configuration"
+        ]
+      }
+    ]
+  },
+  "keyFeatures": [
+    "Immersive VR experience with A-Frame",
+    "Horror-themed casino environment with atmospheric lighting and sound",
+    "Timed memory card matching gameplay with 40-second survival timer",
+    "3D card flip animations and visual effects",
+    "Background music and sound effects",
+    "Automatic game state management and board locking logic"
+  ],
+  "publicApiSurface": [
+    "initGame() - Initialize game board with shuffled cards",
+    "flip(card) - Handle card flip animation and logic",
+    "startTimer() - Begin countdown timer on first card interaction",
+    "die() - Game over handler when timer expires",
+    "win() - Victory handler when all pairs are matched",
+    "cardData array - Card image identifiers for matching pairs",
+    "lockBoard flag - Prevents race conditions during card comparison"
+  ]
+}
